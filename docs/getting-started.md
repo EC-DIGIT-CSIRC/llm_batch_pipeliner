@@ -5,7 +5,7 @@ This is the shortest end-to-end walkthrough for a new user who wants to see what
 It covers two real workflows:
 
 - OpenAI Batch API with `gpt-4o-mini`
-- A 3-way sharded Ollama setup at `http://nanu:11435`, `http://nanu:11436`, and `http://nanu:11437`
+- A 3-way sharded Ollama setup at `http://nanu:11435`, `http://nanu:11436`, and `http://nanu:11437` (Note: "nanu" is my server name for the ollama server. Replace by your ollama server).
 
 These instructions were tested against the live services on 2026-04-09.
 

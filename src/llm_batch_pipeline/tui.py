@@ -23,11 +23,13 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.progress import (
     BarColumn,
+    MofNCompleteColumn,
     Progress,
     SpinnerColumn,
     TaskProgressColumn,
     TextColumn,
     TimeElapsedColumn,
+    TimeRemainingColumn,
 )
 from rich.table import Table
 
@@ -329,3 +331,46 @@ def _progress_fields(snapshot: BatchDisplaySnapshot) -> dict[str, int | str]:
         "speed": format_speed(snapshot.speed_items_per_sec),
         "eta": format_eta(snapshot.eta_seconds),
     }
+
+
+# ---------------------------------------------------------------------------
+# Stage progress bar (tqdm-style)
+# ---------------------------------------------------------------------------
+
+
+def make_stage_progress(description: str, total: int, console: Console | None = None) -> tuple[Progress, int]:
+    """Create a Rich progress bar for a pipeline stage.
+
+    Returns ``(progress, task_id)``.  The caller must call
+    ``progress.start()`` before the loop and ``progress.stop()`` after.
+    The progress bar shows: description, bar, N/M, elapsed, ETA, and
+    iterations/sec (or sec/iteration) in tqdm style.
+    """
+    con = console or Console()
+    progress = Progress(
+        SpinnerColumn(),
+        TextColumn("[bold]{task.description}[/bold]"),
+        BarColumn(bar_width=40),
+        MofNCompleteColumn(),
+        TaskProgressColumn(),
+        TimeElapsedColumn(),
+        TextColumn("<"),
+        TimeRemainingColumn(),
+        TextColumn("{task.fields[speed]}"),
+        console=con,
+        transient=True,
+    )
+    task_id = progress.add_task(description, total=total, speed="?it/s")
+    return progress, task_id
+
+
+def update_stage_speed(progress: Progress, task_id: int) -> None:
+    """Recompute and update the speed field on a stage progress bar."""
+    task = progress.tasks[task_id]
+    elapsed = task.elapsed
+    completed = task.completed
+    if elapsed and elapsed > 0 and completed > 0:
+        speed = completed / elapsed
+        progress.update(task_id, speed=format_speed(speed))
+    else:
+        progress.update(task_id, speed="?it/s")

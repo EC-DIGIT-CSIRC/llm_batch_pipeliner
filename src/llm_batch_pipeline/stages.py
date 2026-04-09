@@ -32,6 +32,7 @@ from llm_batch_pipeline.pipeline import Pipeline, PipelineContext, StageResult
 from llm_batch_pipeline.plugins.registry import get_plugin
 from llm_batch_pipeline.render import render_batch
 from llm_batch_pipeline.transforms import run_transform_chain
+from llm_batch_pipeline.tui import make_stage_progress, update_stage_speed
 from llm_batch_pipeline.validation import validate_batch_output
 
 logger = logging.getLogger("llm_batch_pipeline.stages")
@@ -51,11 +52,20 @@ def stage_discover(ctx: PipelineContext) -> StageResult:
     if input_dir is None or not input_dir.is_dir():
         return StageResult(name="discover", status="failed", error=f"Input directory not found: {input_dir}")
 
+    all_paths = sorted(p for p in input_dir.iterdir() if p.is_file())
+
     files = []
-    for path in sorted(input_dir.iterdir()):
-        if path.is_file() and reader.can_read(path):
-            parsed = reader.read(path)
-            files.append(parsed)
+    progress, task_id = make_stage_progress("Discovering", len(all_paths), console=ctx.console)
+    progress.start()
+    try:
+        for path in all_paths:
+            if reader.can_read(path):
+                parsed = reader.read(path)
+                files.append(parsed)
+            progress.update(task_id, advance=1)
+            update_stage_speed(progress, task_id)
+    finally:
+        progress.stop()
 
     ctx.files = files
     log_event(logger, f"Discovered {len(files)} files", step="discover", status="ok", count=len(files))
@@ -65,7 +75,19 @@ def stage_discover(ctx: PipelineContext) -> StageResult:
 def stage_filter_1(ctx: PipelineContext) -> StageResult:
     """Stage 2a: Pre-transform filter chain."""
     plugin = get_plugin(ctx.config.plugin_name)
-    result = run_filter_chain(ctx.files, plugin.pre_filters, chain_name="filter_1")
+    total = len(ctx.files)
+    progress, task_id = make_stage_progress("Filtering (pre)", total, console=ctx.console)
+
+    def _advance() -> None:
+        progress.update(task_id, advance=1)
+        update_stage_speed(progress, task_id)
+
+    progress.start()
+    try:
+        result = run_filter_chain(ctx.files, plugin.pre_filters, chain_name="filter_1", on_progress=_advance)
+    finally:
+        progress.stop()
+
     ctx.filtered_files = result.kept
     return StageResult(
         name="filter_1",
@@ -78,14 +100,40 @@ def stage_filter_1(ctx: PipelineContext) -> StageResult:
 def stage_transform(ctx: PipelineContext) -> StageResult:
     """Stage 2b: Transform chain."""
     plugin = get_plugin(ctx.config.plugin_name)
-    ctx.filtered_files = run_transform_chain(ctx.filtered_files, plugin.transformers, chain_name="transform")
+    total = len(ctx.filtered_files)
+    progress, task_id = make_stage_progress("Transforming", total, console=ctx.console)
+
+    def _advance() -> None:
+        progress.update(task_id, advance=1)
+        update_stage_speed(progress, task_id)
+
+    progress.start()
+    try:
+        ctx.filtered_files = run_transform_chain(
+            ctx.filtered_files, plugin.transformers, chain_name="transform", on_progress=_advance
+        )
+    finally:
+        progress.stop()
+
     return StageResult(name="transform", status="completed", detail=f"{len(ctx.filtered_files)} files")
 
 
 def stage_filter_2(ctx: PipelineContext) -> StageResult:
     """Stage 2c: Post-transform filter chain."""
     plugin = get_plugin(ctx.config.plugin_name)
-    result = run_filter_chain(ctx.filtered_files, plugin.post_filters, chain_name="filter_2")
+    total = len(ctx.filtered_files)
+    progress, task_id = make_stage_progress("Filtering (post)", total, console=ctx.console)
+
+    def _advance() -> None:
+        progress.update(task_id, advance=1)
+        update_stage_speed(progress, task_id)
+
+    progress.start()
+    try:
+        result = run_filter_chain(ctx.filtered_files, plugin.post_filters, chain_name="filter_2", on_progress=_advance)
+    finally:
+        progress.stop()
+
     ctx.filtered_files = result.kept
     return StageResult(
         name="filter_2",

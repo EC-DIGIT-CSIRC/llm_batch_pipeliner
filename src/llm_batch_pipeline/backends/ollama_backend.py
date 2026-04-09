@@ -50,6 +50,7 @@ logger = logging.getLogger("llm_batch_pipeline.backends.ollama")
 
 _MAX_RETRIES = 3
 _RETRY_BACKOFF_SECONDS = 2.0
+_WARMUP_TIMEOUT_SECONDS = 300  # 5 min for model loading on cold start
 
 # JSON Schema keywords unsupported by llama.cpp GBNF grammar
 _UNSUPPORTED_SCHEMA_KEYS = frozenset(
@@ -147,6 +148,11 @@ class OllamaBackend(BatchBackend):
         # Generate batch ID
         batch_id = _make_batch_id(batch_jsonl)
 
+        # Warm up each unique server to force model loading before the batch
+        unique_urls = list(dict.fromkeys(base_urls))  # preserve order, dedupe
+        for warmup_url in unique_urls:
+            _warmup_server(warmup_url, config.model, insecure=config.insecure)
+
         # Execute shards
         started = time.monotonic()
         started_at = time.time()
@@ -170,9 +176,15 @@ class OllamaBackend(BatchBackend):
         total_workers = num_shards * config.num_parallel_jobs
         with ThreadPoolExecutor(max_workers=total_workers) as pool:
             futures = {}
-            for shard_idx, shard_requests in enumerate(shards):
-                base_url = base_urls[shard_idx % len(base_urls)]
-                for prep in shard_requests:
+            # Interleave submissions across shards so the thread pool
+            # picks up work from all servers concurrently (round-robin).
+            max_shard_len = max((len(s) for s in shards), default=0)
+            for item_idx in range(max_shard_len):
+                for shard_idx, shard_requests in enumerate(shards):
+                    if item_idx >= len(shard_requests):
+                        continue
+                    base_url = base_urls[shard_idx % len(base_urls)]
+                    prep = shard_requests[item_idx]
                     fut = pool.submit(
                         _execute_request,
                         prep,
@@ -343,6 +355,68 @@ def _sanitise_schema_for_ollama(schema: dict[str, Any]) -> dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
+# Model warmup
+# ---------------------------------------------------------------------------
+
+
+def _warmup_server(base_url: str, model: str, *, insecure: bool = False) -> bool:
+    """Send a trivial chat request to force model loading before the batch.
+
+    Returns ``True`` if the warmup succeeded, ``False`` otherwise.
+    The warmup uses a generous timeout since the server may need to load
+    the model into GPU VRAM (30-120+ seconds on cold start).
+    """
+    url = f"{base_url.rstrip('/')}{OLLAMA_CHAT_ENDPOINT}"
+    payload = {
+        "model": model,
+        "messages": [{"role": "user", "content": "hi"}],
+        "stream": False,
+    }
+    timeout = httpx.Timeout(_WARMUP_TIMEOUT_SECONDS)
+    verify = not insecure
+
+    log_event(
+        logger,
+        f"Warming up model '{model}' on {base_url}",
+        step="submit",
+        status="warmup_start",
+        base_url=base_url,
+        model=model,
+    )
+    start_ns = time.perf_counter_ns()
+
+    try:
+        with httpx.Client(timeout=timeout, verify=verify) as client:
+            response = client.post(url, json=payload)
+            response.raise_for_status()
+        duration_ms = (time.perf_counter_ns() - start_ns) / 1_000_000
+        log_event(
+            logger,
+            f"Warmup succeeded on {base_url} in {duration_ms:.0f}ms",
+            step="submit",
+            status="warmup_ok",
+            base_url=base_url,
+            model=model,
+            duration_ms=duration_ms,
+        )
+        return True
+    except (httpx.ConnectError, httpx.TimeoutException, httpx.HTTPStatusError) as exc:
+        duration_ms = (time.perf_counter_ns() - start_ns) / 1_000_000
+        log_event(
+            logger,
+            f"Warmup failed on {base_url}: {exc}",
+            step="submit",
+            status="warmup_failed",
+            base_url=base_url,
+            model=model,
+            error=str(exc),
+            duration_ms=duration_ms,
+            level=logging.WARNING,
+        )
+        return False
+
+
+# ---------------------------------------------------------------------------
 # Request execution
 # ---------------------------------------------------------------------------
 
@@ -355,61 +429,74 @@ def _execute_request(
 ) -> OllamaExecutionResult:
     """Execute a single Ollama request with retry logic."""
     url = f"{base_url.rstrip('/')}{OLLAMA_CHAT_ENDPOINT}"
-    timeout = httpx.Timeout(config.request_timeout_seconds, connect=30.0)
+    timeout = httpx.Timeout(config.request_timeout_seconds)
+    verify = not config.insecure
 
-    for attempt in range(1, _MAX_RETRIES + 1):
-        start_ns = time.perf_counter_ns()
-        try:
-            metrics.inc_active("ollama")
+    with httpx.Client(timeout=timeout, verify=verify) as client:
+        for attempt in range(1, _MAX_RETRIES + 1):
+            start_ns = time.perf_counter_ns()
+            try:
+                metrics.inc_active("ollama")
 
-            verify = not config.insecure
-            with httpx.Client(timeout=timeout, verify=verify) as client:
                 response = client.post(url, json=prep.payload)
                 response.raise_for_status()
                 resp_data = response.json()
 
-            duration_ms = (time.perf_counter_ns() - start_ns) / 1_000_000
-            metrics.dec_active("ollama")
-            metrics.record_request("ollama", config.model, duration_ms, "success")
+                duration_ms = (time.perf_counter_ns() - start_ns) / 1_000_000
+                metrics.dec_active("ollama")
+                metrics.record_request("ollama", config.model, duration_ms, "success")
 
-            return OllamaExecutionResult(
-                index=prep.index,
-                custom_id=prep.custom_id,
-                success_record=_build_success_record(prep.custom_id, resp_data),
-                duration_ms=duration_ms,
-            )
-
-        except (httpx.ConnectError, httpx.TimeoutException, httpx.HTTPStatusError) as exc:
-            duration_ms = (time.perf_counter_ns() - start_ns) / 1_000_000
-            metrics.dec_active("ollama")
-
-            if attempt < _MAX_RETRIES:
                 log_event(
                     logger,
-                    f"Retry {attempt}/{_MAX_RETRIES} for {prep.custom_id}: {exc}",
+                    f"OK {prep.custom_id} in {duration_ms:.0f}ms",
                     step="submit",
-                    status="retrying",
+                    status="ok",
                     custom_id=prep.custom_id,
-                    attempt=attempt,
+                    duration_ms=duration_ms,
+                    url=url,
+                    level=logging.DEBUG,
                 )
-                time.sleep(_RETRY_BACKOFF_SECONDS * attempt)
-            else:
-                metrics.record_request("ollama", config.model, duration_ms, "failure")
-                log_event(
-                    logger,
-                    f"Failed after {_MAX_RETRIES} attempts: {prep.custom_id}: {exc}",
-                    step="submit",
-                    status="failed",
-                    custom_id=prep.custom_id,
-                    error=str(exc),
-                    level=logging.ERROR,
-                )
+
                 return OllamaExecutionResult(
                     index=prep.index,
                     custom_id=prep.custom_id,
-                    error_record=_build_error_record(prep.custom_id, exc),
+                    success_record=_build_success_record(prep.custom_id, resp_data),
                     duration_ms=duration_ms,
                 )
+
+            except (httpx.ConnectError, httpx.TimeoutException, httpx.HTTPStatusError) as exc:
+                duration_ms = (time.perf_counter_ns() - start_ns) / 1_000_000
+                metrics.dec_active("ollama")
+
+                if attempt < _MAX_RETRIES:
+                    log_event(
+                        logger,
+                        f"Retry {attempt}/{_MAX_RETRIES} for {prep.custom_id}: {exc}",
+                        step="submit",
+                        status="retrying",
+                        custom_id=prep.custom_id,
+                        attempt=attempt,
+                        url=url,
+                    )
+                    time.sleep(_RETRY_BACKOFF_SECONDS * attempt)
+                else:
+                    metrics.record_request("ollama", config.model, duration_ms, "failure")
+                    log_event(
+                        logger,
+                        f"Failed after {_MAX_RETRIES} attempts: {prep.custom_id}: {exc}",
+                        step="submit",
+                        status="failed",
+                        custom_id=prep.custom_id,
+                        error=str(exc),
+                        url=url,
+                        level=logging.ERROR,
+                    )
+                    return OllamaExecutionResult(
+                        index=prep.index,
+                        custom_id=prep.custom_id,
+                        error_record=_build_error_record(prep.custom_id, exc),
+                        duration_ms=duration_ms,
+                    )
 
     # Should not reach here, but satisfy type checker
     return OllamaExecutionResult(index=prep.index, custom_id=prep.custom_id)

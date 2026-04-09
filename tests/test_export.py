@@ -1,6 +1,5 @@
 """Tests for export.py — XLSX export."""
 
-
 from llm_batch_pipeline.evaluation import PredictionRow, evaluate
 from llm_batch_pipeline.export import export_evaluation_xlsx, export_results_xlsx
 

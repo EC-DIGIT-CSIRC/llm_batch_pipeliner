@@ -8,6 +8,7 @@ Files that fail any filter are excluded and the drop reason is recorded.
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -40,6 +41,7 @@ def run_filter_chain(
     filters: list[Filter],
     *,
     chain_name: str = "filter",
+    on_progress: Callable[[], None] | None = None,
 ) -> FilterResult:
     """Apply *filters* sequentially to *files*.
 
@@ -82,6 +84,9 @@ def run_filter_chain(
                     "reason": reason,
                 }
             )
+
+        if on_progress:
+            on_progress()
 
     log_event(
         logger,

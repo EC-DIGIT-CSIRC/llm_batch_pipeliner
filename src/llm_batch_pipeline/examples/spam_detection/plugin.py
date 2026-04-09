@@ -85,12 +85,10 @@ class EmailReader(FileReader):
         suffix = path.suffix.lower()
         if suffix in _EML_EXTENSIONS:
             return True
-        # Reject known non-email extensions
-        if suffix in _SKIP_EXTENSIONS:
-            return False
-        # Accept extensionless files or files with hash-like suffixes
+        # Reject known non-email extensions; accept extensionless files
+        # or files with hash-like suffixes
         # (e.g. "easy_ham__00027.4d456dd9ce0afde7629f94dc3034e0bb")
-        return True
+        return suffix not in _SKIP_EXTENSIONS
 
     def read(self, path: Path) -> ParsedFile:
         raw = path.read_bytes()

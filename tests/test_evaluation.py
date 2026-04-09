@@ -1,6 +1,5 @@
 """Tests for evaluation.py — confusion matrix, metrics, ground truth."""
 
-
 from llm_batch_pipeline.evaluation import (
     ClassMetrics,
     EvalReport,

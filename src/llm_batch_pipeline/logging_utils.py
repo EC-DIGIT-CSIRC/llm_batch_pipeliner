@@ -61,6 +61,21 @@ class ConsoleFormatter(logging.Formatter):
         return f"{source} {step} {status}{dur_frag}: {record.getMessage()}"
 
 
+class ConsoleLogFilter(logging.Filter):
+    """Suppress per-item log events from the console handler.
+
+    Per-item events carry a ``file_id`` or ``custom_id`` in their
+    structured ``event`` dict.  Summary and pipeline-level events do not
+    and are allowed through.  Warnings and errors always pass regardless.
+    """
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        if record.levelno >= logging.WARNING:
+            return True
+        event: dict[str, Any] = getattr(record, "event", {})
+        return not (event.get("file_id") or event.get("custom_id"))
+
+
 # ---------------------------------------------------------------------------
 # Runtime container
 # ---------------------------------------------------------------------------
@@ -101,6 +116,7 @@ def start_logging(logs_dir: Path, *, level: str = "INFO") -> LoggingRuntime:
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(ConsoleFormatter())
     console_handler.setLevel(logging.INFO)
+    console_handler.addFilter(ConsoleLogFilter())
 
     listener = QueueListener(queue, pipeline_handler, console_handler, respect_handler_level=True)
     listener.start()

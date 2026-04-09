@@ -7,6 +7,7 @@ instances sequentially to each :class:`~llm_batch_pipeline.plugins.base.ParsedFi
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 
 from llm_batch_pipeline.logging_utils import log_event
 from llm_batch_pipeline.metrics import timed
@@ -20,6 +21,7 @@ def run_transform_chain(
     transformers: list[Transformer],
     *,
     chain_name: str = "transform",
+    on_progress: Callable[[], None] | None = None,
 ) -> list[ParsedFile]:
     """Apply *transformers* sequentially to every file in *files*.
 
@@ -59,6 +61,9 @@ def run_transform_chain(
                 )
                 # Keep the file in its pre-transform state
         results.append(current)
+
+        if on_progress:
+            on_progress()
 
     log_event(
         logger,

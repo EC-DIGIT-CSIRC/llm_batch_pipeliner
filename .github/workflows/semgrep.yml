@@ -1,0 +1,22 @@
+name: Semgrep
+on:
+  push:
+    branches: [main]
+    paths: ["src/**/*.py", "tests/**/*.py", ".github/workflows/semgrep.yml"]
+  pull_request:
+    paths: ["src/**/*.py", "tests/**/*.py", ".github/workflows/semgrep.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  semgrep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install semgrep
+      - run: semgrep --config p/default --metrics off --disable-version-check --exclude .venv .github docs tests

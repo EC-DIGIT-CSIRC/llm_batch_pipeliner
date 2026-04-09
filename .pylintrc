@@ -1,0 +1,34 @@
+[MASTER]
+ignore=tests
+py-version=3.13
+
+[MESSAGES CONTROL]
+disable=
+    missing-module-docstring,
+    missing-class-docstring,
+    missing-function-docstring,
+    too-few-public-methods,
+    too-many-arguments,
+    too-many-instance-attributes,
+    too-many-locals,
+    too-many-branches,
+    too-many-return-statements,
+    too-many-statements,
+    broad-exception-caught,
+    import-error,
+    no-member,
+    import-outside-toplevel,
+    protected-access,
+    duplicate-code,
+    global-statement,
+    arguments-differ,
+    multiple-statements,
+    unused-argument,
+    f-string-without-interpolation,
+    wrong-import-order
+
+[FORMAT]
+max-line-length=260
+
+[BASIC]
+good-names=i,j,k,_,id,f1,tp,tn,fp,fn,url,db,p,r,T,ok,cm,wb,ws,fh,pf,tx,sp,dx,ct,h,v,n,d,t,mySchema

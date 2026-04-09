@@ -1,0 +1,23 @@
+name: Pylint
+on:
+  push:
+    branches: [main]
+    paths: ["src/**/*.py", "pyproject.toml", "uv.lock", ".pylintrc", ".github/workflows/pylint.yml"]
+  pull_request:
+    paths: ["src/**/*.py", "pyproject.toml", "uv.lock", ".pylintrc", ".github/workflows/pylint.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pylint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install uv
+      - run: uv sync --group dev
+      - run: uv run --with pylint pylint src/llm_batch_pipeline

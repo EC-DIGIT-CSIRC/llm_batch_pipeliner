@@ -1,0 +1,224 @@
+# LLM Batch Pipeline — Admin Guide
+
+Operations and deployment guide for running `llm-batch-pipeline` in production.
+
+## Prerequisites
+
+- Python 3.13+
+- `uv` package manager
+- For OpenAI backend: `OPENAI_API_KEY` environment variable
+- For Ollama backend: One or more Ollama servers with models pulled
+
+## Installation
+
+```bash
+uv sync              # Install all dependencies
+uv sync --group dev  # Include dev tools (pytest, ruff, pylint)
+```
+
+### Dependency Verification
+
+All dependencies are pinned in `uv.lock`. The project follows a strict supply chain policy:
+
+- Versions and hashes are pinned
+- Packages published < 48 hours ago are flagged
+- Maintainer account changes are flagged
+- Typosquatting names are checked against popular packages
+- GPL/AGPL dependencies are permitted
+
+### Production Dependencies
+
+| Package | Purpose | License |
+|---------|---------|---------|
+| `httpx` | Ollama HTTP client | BSD-3 |
+| `openai` | OpenAI API client | Apache-2.0 |
+| `openpyxl` | XLSX export | MIT |
+| `prometheus-client` | Metrics (zero transitive deps) | Apache-2.0 |
+| `pydantic` | Schema validation | MIT |
+| `python-dotenv` | Environment file loading | BSD-3 |
+| `rich` | Terminal UI | MIT |
+| `selectolax` | HTML parsing | MIT |
+| `charset-normalizer` | Charset fallback | MIT |
+| `mail-parser-reply` | Reply chain stripping | Apache-2.0 |
+
+## Deployment Patterns
+
+### Single Machine with Ollama
+
+```bash
+# Pull model
+ollama pull llama3.1:8b
+
+# Run pipeline
+uv run llm-batch-pipeline run \
+    --batch-dir batches/batch_001_test \
+    --plugin spam_detection \
+    --backend ollama \
+    --model llama3.1:8b \
+    --num-parallel-jobs 4 \
+    --auto-approve
+```
+
+### Multi-GPU Server Farm
+
+For servers with multiple GPUs (each running an Ollama instance):
+
+```bash
+uv run llm-batch-pipeline run \
+    --batch-dir batches/batch_001_test \
+    --plugin spam_detection \
+    --backend ollama \
+    --base-url http://gpu1:11434 \
+    --base-url http://gpu2:11434 \
+    --base-url http://gpu3:11434 \
+    --num-parallel-jobs 4 \
+    --model llama3.1:70b \
+    --auto-approve
+```
+
+The pipeline automatically:
+1. Shards the JSONL across servers (round-robin)
+2. Creates per-shard thread pools
+3. Aggregates results back into a single output
+
+### OpenAI Batch API (Cloud)
+
+```bash
+export OPENAI_API_KEY="sk-..."
+
+uv run llm-batch-pipeline run \
+    --batch-dir batches/batch_001_test \
+    --plugin spam_detection \
+    --backend openai \
+    --model gpt-4o-mini \
+    --poll-interval 30 \
+    --auto-approve
+```
+
+OpenAI batches have a 24h completion window. Use `--no-wait` to submit and check later:
+
+```bash
+# Submit without waiting
+uv run llm-batch-pipeline submit \
+    --batch-dir batches/batch_001_test \
+    --backend openai \
+    --no-wait
+
+# Resume monitoring later
+uv run llm-batch-pipeline submit \
+    --batch-dir batches/batch_001_test \
+    --backend openai \
+    --resume-batch-id batch_abc123
+```
+
+## Monitoring
+
+### Prometheus + Grafana
+
+Enable metrics collection with `--metrics-port`:
+
+```bash
+uv run llm-batch-pipeline run --metrics-port 9090 ...
+```
+
+Add to your `prometheus.yml`:
+
+```yaml
+scrape_configs:
+  - job_name: 'llm-batch-pipeline'
+    static_configs:
+      - targets: ['localhost:9090']
+```
+
+Available metrics:
+
+| Metric | Type | Description |
+|--------|------|-------------|
+| `pipeline_stage_duration_seconds` | Histogram | Duration per pipeline stage |
+| `pipeline_requests_total` | Counter | Total processed requests |
+| `pipeline_requests_failed_total` | Counter | Failed requests |
+| `pipeline_active_requests` | Gauge | Currently in-flight requests |
+
+### Log Files
+
+All runs produce structured JSONL logs in the batch's `logs/` directory:
+
+```
+logs/
+├── pipeline.jsonl    # Structured event log (every step)
+└── metrics.json      # Aggregated timing and count metrics
+```
+
+Each log line contains:
+
+```json
+{
+  "timestamp": "2026-04-08T12:34:56.789Z",
+  "level": "info",
+  "logger": "llm_batch_pipeline.stages",
+  "step": "discover",
+  "status": "ok",
+  "duration_ms": 42.5,
+  "message": "Discovered 500 files"
+}
+```
+
+## Security
+
+### TLS
+
+By default, all HTTPS connections verify TLS certificates. Use `--insecure` / `-k` only for development:
+
+```bash
+# Development only — disables TLS verification
+uv run llm-batch-pipeline submit --insecure ...
+```
+
+### API Keys
+
+Store API keys in `.env` files (loaded via `python-dotenv`) or environment variables. Never commit `.env` files.
+
+### File Permissions
+
+Output directories are created with default permissions. On shared systems, consider restricting access:
+
+```bash
+chmod 700 batches/batch_001_sensitive/
+```
+
+## Batch Directory Lifecycle
+
+```
+1. init         → Creates batch_NNN_name/ with input/, evaluation/, config.toml
+2. populate     → User copies input files into input/
+3. run/render   → Creates job/ with JSONL shards
+4. submit       → Creates output/ with LLM responses
+5. validate     → Creates results/ with validated JSON
+6. evaluate     → Creates export/evaluation.json
+7. export       → Creates export/*.xlsx
+8. archive      → User archives or deletes the batch directory
+```
+
+### Cleaning Up
+
+Batch directories are self-contained. To remove a completed batch:
+
+```bash
+rm -rf batches/batch_001_test/
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**"No plugins registered"** — Ensure you installed the package (`uv sync`). Built-in plugins (`spam_detection`, `gdpr_detection`) are auto-registered on import.
+
+**"Input directory not found"** — The `input/` subdirectory must exist in the batch directory and contain files the plugin's reader can handle.
+
+**"Batch directory not found"** — The `--batch-dir` argument is resolved relative to `--batch-jobs-root` (default: `./batches`). You can also pass an absolute or relative path directly.
+
+**OpenAI rate limits** — The Batch API has its own rate limits separate from the real-time API. Check your OpenAI dashboard for quota.
+
+**Ollama timeouts** — Increase `--request-timeout` for large models or slow hardware. The default is 600 seconds.
+
+**Schema validation failures** — Ensure the LLM model supports structured output. Check `results/validated.json` for per-row error details.

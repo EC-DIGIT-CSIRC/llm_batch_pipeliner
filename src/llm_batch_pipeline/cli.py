@@ -519,9 +519,13 @@ def _cmd_validate(args: argparse.Namespace) -> int:
             # Auto-discover from output dir
             output_dir = config.output_dir
             if output_dir.is_dir():
-                output_files = sorted(output_dir.glob("*.jsonl"))
-                if output_files:
-                    ctx.artifacts["output_files"] = [str(f) for f in output_files]
+                preferred = output_dir / "output.jsonl"
+                if preferred.is_file():
+                    ctx.artifacts["output_files"] = [str(preferred)]
+                else:
+                    output_files = sorted(output_dir.glob("*.jsonl"))
+                    if output_files:
+                        ctx.artifacts["output_files"] = [str(f) for f in output_files]
 
         if not ctx.artifacts.get("output_files"):
             console.print("[red]No output JSONL files found. Run 'submit' first or specify --output-jsonl.[/red]")
@@ -655,6 +659,13 @@ _COMMAND_MAP = {
 
 def main(argv: Sequence[str] | None = None) -> int:
     """Entry point for the llm-batch-pipeline CLI."""
+    try:
+        from dotenv import load_dotenv  # noqa: PLC0415
+
+        load_dotenv()
+    except ImportError:
+        pass
+
     parser = build_parser()
     args = parser.parse_args(argv if argv is not None else sys.argv[1:])
 

@@ -163,13 +163,18 @@ def validate_batch_output(
 
 def _extract_output_text(record: dict[str, Any]) -> str | None:
     """Extract the output text from an OpenAI-compatible response record."""
+    candidate: str | None = None
     try:
         body = record["response"]["body"]
         for output_item in body.get("output", []):
             if output_item.get("type") == "message":
                 for content_item in output_item.get("content", []):
                     if content_item.get("type") == "output_text":
-                        return content_item.get("text")
+                        text = content_item.get("text")
+                        if text:
+                            return text
+                        if text == "":
+                            candidate = text
     except (KeyError, TypeError):
         pass
-    return None
+    return candidate

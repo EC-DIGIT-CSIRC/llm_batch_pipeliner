@@ -15,6 +15,27 @@ class TestExtractOutputText:
         text = _extract_output_text(record)
         assert text == '{"label": "spam"}'
 
+    def test_skips_empty_output_text_blocks(self):
+        record = {
+            "custom_id": "file.eml",
+            "response": {
+                "body": {
+                    "output": [
+                        {
+                            "type": "message",
+                            "content": [{"type": "output_text", "text": ""}],
+                        },
+                        {
+                            "type": "message",
+                            "content": [{"type": "output_text", "text": '{"label": "spam"}'}],
+                        },
+                    ]
+                }
+            },
+        }
+        text = _extract_output_text(record)
+        assert text == '{"label": "spam"}'
+
     def test_returns_none_for_missing_output(self):
         record = {"custom_id": "x", "response": {"body": {}}}
         assert _extract_output_text(record) is None

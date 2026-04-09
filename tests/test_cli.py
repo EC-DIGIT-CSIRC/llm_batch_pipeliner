@@ -1,5 +1,8 @@
 """Tests for cli.py — argument parsing and subcommand dispatch."""
 
+import sys
+from types import SimpleNamespace
+
 from llm_batch_pipeline.cli import build_parser, main
 
 
@@ -56,6 +59,18 @@ class TestMain:
         with pytest.raises(SystemExit) as exc:
             main(["--version"])
         assert exc.value.code == 0
+
+    def test_main_loads_dotenv(self, monkeypatch):
+        calls: list[bool] = []
+
+        def _fake_load_dotenv():
+            calls.append(True)
+
+        monkeypatch.setitem(sys.modules, "dotenv", SimpleNamespace(load_dotenv=_fake_load_dotenv))
+
+        rc = main(["list"])
+        assert rc == 0
+        assert calls == [True]
 
     def test_list_command(self):
         rc = main(["list"])

@@ -18,7 +18,7 @@ This document records a representative end-to-end benchmark run of the
 
 ## Dataset
 
-- **Source**: SpamAssassin public corpus, stratified 500-email sample
+- **Source**: [SpamAssassin public corpus](https://www.kaggle.com/datasets/beatoa/spamassassin-public-corpus), stratified 500-email sample
 - **Location**: `benchmarks/spamassassin/runs/spam_500_sample/input/`
 - **Classes**: `ham` (easy\_ham, easy\_ham\_2, hard\_ham) and `spam` (spam, spam\_2)
 - **Category map**: filename prefix to label mapping via `category-map.json`
@@ -178,31 +178,4 @@ batches/batch_002_spam_benchmark/
     pipeline.jsonl       # Full structured log (all per-item events)
 ```
 
-## Bugs Fixed Before This Run
 
-This was the first successful run.  The following bugs were identified and
-fixed in the preceding session:
-
-1. **Connect timeout too short (30s)** -- `httpx.Timeout` was using a separate
-   30s connect timeout that expired before Ollama loaded the model.  Fixed by
-   using a single uniform timeout matching `request_timeout_seconds` (600s).
-
-2. **No model warmup** -- first batch of requests all failed while the model
-   loaded.  Fixed by adding `_warmup_server()` that sends a trivial chat
-   request to each server before batch dispatch.
-
-3. **httpx.Client created per retry** -- prevented connection reuse.  Fixed by
-   creating the client once outside the retry loop.
-
-4. **Shard submissions not interleaved** -- all futures for shard 0 submitted
-   first (FIFO), so GPUs ran sequentially.  Fixed by interleaving submissions
-   round-robin: `shard0[0], shard1[0], shard2[0], shard0[1], ...`.
-
-5. **Console spam from per-item log events** -- every request printed to
-   terminal.  Fixed by adding `ConsoleLogFilter` that suppresses INFO events
-   carrying `file_id` or `custom_id` from the console handler while preserving
-   them in JSONL.
-
-6. **Missing per-request URL and success logging** -- couldn't diagnose which
-   shard was failing.  Fixed by adding `url=` to all log events and logging
-   successes at DEBUG level.

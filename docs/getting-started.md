@@ -32,16 +32,16 @@ uv sync
 
 - for OpenAI: a `.env` file in the repo root with `OPENAI_API_KEY=...`
 
-The CLI now auto-loads `.env` from the repository root.
+The CLI will auto-load `.env` from the repository root.
 
 ## Offline Sanity Check
 
-Before using any backend, verify the install:
+Before using any backend, please verify the install:
 
 ```bash
-uv run llm-batch-pipeline list
+uv run llm-batch-pipeline list      # list the plugins
 uv sync --group dev
-uv run pytest -q
+uv run pytest -q                    # quick self-test. if this fails, please submit a bug report
 ```
 
 ## OpenAI Batch Walkthrough
@@ -61,6 +61,8 @@ Use that path in the commands below as `<openai-batch-dir>`.
 cp src/llm_batch_pipeline/examples/spam_detection/prompt.txt <openai-batch-dir>/prompt.txt
 cp src/llm_batch_pipeline/examples/spam_detection/schema.py <openai-batch-dir>/schema.py
 ```
+
+If you feel adventurous, you can modify the prompt.txt. Note that it needs to fit to schema.py of course. `schema.py` is a pydantic class which helps in validating the answers that the LLM sends back. Of course, every field which is mentioned in schema.py must be present in the `prompt.txt` and vice versa. It really helps to test out the prompt and the schema on single files.
 
 ### 3. Add two sample emails
 
@@ -116,6 +118,31 @@ uv run llm-batch-pipeline render --batch-dir <openai-batch-dir> --plugin spam_de
 
 This writes the request payload to `<openai-batch-dir>/job/batch-00001.jsonl`.
 
+
+This should give something like this:
+```
+- discover ok: Discovered 2 files
+  discover: completed — 2 files
+  filter_1: completed — kept 2/2
+- filter_1 ok: filter_1: kept 2/2
+  transform: completed — 2 files
+⠋ Filtering (post) ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 0/2   0% 0:00:00 < -:--:-- ?it/s- transform ok: transform: transformed 2 files
+  filter_2: completed — kept 2/2
+  render: completed — 1 shard(s), 2 requests
+
+Rendered 1 shard(s) to (...)/llm_batch_pipeliner/<openai-batch-dir>/job
+- render ok: Rendered 2 requests into 1 shard(s)
+```
+
+You can now look at the file. It is essentially a JSONL file suitable for submission to openai's Batch API:
+```bash
+jq -C .  <openai-batch-dir>/job/batch.jsonl
+```
+It's interesting to see how the prompt as well as the rendered schema.py end up as a list of JSON structures for openai.
+
+
+Next it's time to ...
+
 ### 6. Submit to OpenAI Batch API
 
 ```bash
@@ -134,6 +161,13 @@ If you do not want to keep the terminal open:
 uv run llm-batch-pipeline submit --batch-dir <openai-batch-dir> --backend openai --no-wait
 uv run llm-batch-pipeline submit --batch-dir <openai-batch-dir> --backend openai --resume-batch-id <batch-id>
 ```
+
+You can also go to [platform.openai.com](https://platform.openai.com), log in and go to the batches tab:
+
+<img width="1483" height="616" alt="image" src="https://github.com/user-attachments/assets/56d4c9cb-028d-473f-857d-aa43975711c6" />
+
+It can take 24h to process the batch file. You can't specify shorter time to completion windows than 24h. 
+After the batch completed, the system can download the resulting output and ...
 
 ### 7. Validate the output
 

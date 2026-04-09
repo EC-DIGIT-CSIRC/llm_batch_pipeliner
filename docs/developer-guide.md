@@ -109,7 +109,7 @@ class SentimentResult(BaseModel):
     )
     reason: str = Field(description="Explanation.")
 
-# REQUIRED: the pipeline loads schemas by this name
+# REQUIRED: `schema_loader` expects a symbol named `mySchema`
 mySchema = SentimentResult
 ```
 
@@ -126,7 +126,6 @@ def register():
         pre_filters=[MinRowFilter(min_rows=2)],
         transformers=[NormalizeHeadersTransformer()],
         post_filters=[],
-        default_schema_module="my_plugin.schema",
     ))
 ```
 
@@ -148,6 +147,55 @@ Or register programmatically before calling the pipeline:
 from my_plugin.plugin import register
 register()
 ```
+
+## Custom Prompt, Schema, and Evaluation (per batch)
+
+The plugin system controls how inputs are parsed and preprocessed. Prompt/instructions, schema validation, and evaluation configuration are provided per *batch run*.
+
+### Custom prompt (instructions)
+
+The LLM `instructions` text is loaded from:
+
+- `--prompt-file` (CLI) or `batches/<batch>/prompt.txt` (file in the batch directory)
+- a built-in fallback prompt when neither exists
+
+For submit-time overrides, use `--prompt-override` / `--prompt-override-file`.
+The backends apply this by rewriting `body.instructions` for every request right before submission.
+
+Your plugin’s `FileReader.package_for_llm()` controls the per-file content injected as the `input_text` part of the prompt.
+
+### Custom Pydantic schema
+
+Provide a schema via one of these mechanisms:
+
+- `--schema-file path/to/schema.py`
+- or a `schema.py` file placed in the batch directory (`batches/<batch>/schema.py`)
+
+Your schema file must define `mySchema` (typically `class mySchema(BaseModel): ...` or `mySchema = SomeModel`).
+The pipeline converts it to a strict JSON schema for structured outputs and then validates the LLM JSON against it.
+
+Evaluation field mapping defaults to `label` and `confidence`. To evaluate other schema field names, use `--label-field` and `--confidence-field`.
+
+Note: evaluation auto-detection of label/confidence from the schema runs only when `--schema-file` is explicitly provided.
+If you rely solely on `batches/<batch>/schema.py`, set `--label-field` / `--confidence-field` explicitly.
+
+### Custom evaluation
+
+The built-in `evaluate` stage computes confusion matrix + precision/recall/F1 + accuracy, and optionally ROC/AUC for binary classification when `--positive-class` is set (and confidence is available).
+
+It uses:
+
+- Ground truth from `--ground-truth-csv` or `batches/<batch>/evaluation/ground-truth.csv`
+- Category map from `--category-map` or `batches/<batch>/evaluation/category-map.json`
+
+Supported 'custom evaluation' via plugins:
+
+- Implement `OutputTransformer` in your plugin to reshape `validated_rows` before evaluation/export (e.g. rename/move fields so they match `--label-field` / `--confidence-field`).
+
+If you need entirely different evaluation metrics/logic:
+
+- modify `src/llm_batch_pipeline/evaluation.py` (`evaluate()` / `EvalReport`)
+- and update `src/llm_batch_pipeline/stages.py` `stage_evaluate()` (plus `src/llm_batch_pipeline/export.py` if the report format changes)
 
 ## Plugin ABCs Reference
 

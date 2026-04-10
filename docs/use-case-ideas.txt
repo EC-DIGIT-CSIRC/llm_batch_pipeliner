@@ -1,0 +1,150 @@
+IT Security Use-Case Ideas for llm_batch_pipeliner
+
+This project is a strong fit for high-volume, repeatable security triage and extraction tasks where inputs can be batched and outputs can be validated as structured JSON.
+
+Email Security
+- Phishing vs legitimate email classification
+- Business email compromise detection
+- Suspicious URL extraction from emails
+- Attachment risk triage from email text and metadata
+- VIP-targeted phishing prioritization
+- Historical mailbox review after an incident
+
+SOC / Detection Engineering
+- SIEM alert triage from exported event summaries
+- Incident severity classification
+- False-positive vs true-positive labeling
+- MITRE ATT&CK technique tagging
+- Alert deduplication and campaign grouping
+- Recommended next action generation for Tier 1 analysts
+
+Threat Intelligence
+- IOC extraction from reports, blogs, and advisories
+- Threat actor or malware family tagging
+- TLP and sharing-sensitivity classification
+- CTI report summarization into structured fields
+- Campaign timeline extraction from bulletin text
+- Mapping threat intel reports to internal detection opportunities
+
+Vulnerability Management
+- CVE bulletin triage by relevance to the environment
+- Vulnerability report summarization from scanner exports
+- Patch-priority scoring using CVSS plus business context
+- Exploitability labeling from advisory text
+- Remediation summary generation for asset owners
+- Duplicate finding consolidation across scanners
+
+Cloud / IAM
+- IAM policy review for excessive privilege
+- Terraform or CloudFormation security issue extraction
+- Cloud configuration triage into misconfiguration categories
+- Storage bucket or secret exposure review from findings exports
+- Audit log classification for suspicious admin activity
+- Access review comment summarization and risk tagging
+
+Application Security
+- SAST finding triage by exploitability
+- Secret leak report classification
+- Dependency advisory normalization
+- Secure code review note extraction from PR comments
+- API endpoint risk classification from specs and docs
+- Bug bounty submission triage
+
+GRC / Compliance
+- Security questionnaire answer drafting from control documents
+- Policy and control mapping to ISO 27001, NIST, CIS, or SOC 2
+- Evidence classification for audits
+- Vendor security assessment triage
+- DPA or contract clause extraction for security obligations
+- Exception request risk categorization
+
+Incident Response / DFIR
+- Host or case note summarization
+- Timeline event classification from exported artifacts
+- Malware sandbox result summarization
+- Triage of forensic text artifacts
+- Root-cause extraction from incident writeups
+- Lessons-learned clustering across incidents
+
+Security Operations Workflow
+- Ticket routing from security queue exports
+- Duplicate ticket detection
+- SLA breach risk prediction from ticket text
+- Customer-facing incident update drafting
+- Knowledge base article generation from resolved cases
+- Postmortem theme clustering
+
+High-ROI Starting Points
+- Phishing email triage
+- SIEM alert classification
+- Vulnerability advisory prioritization
+- IOC extraction from threat intelligence
+- IAM policy risk review
+- Security ticket routing
+
+Why These Fit the Pipeline
+- Inputs are naturally batchable
+- Outputs can be schema-validated
+- Predictions can be evaluated against ground truth
+- Human review can be inserted before or after submission
+
+Ranked Top 10 for ROI
+
+Ranking basis
+- High analyst time savings
+- Clear input/output structure
+- Easy evaluation against labels or analyst decisions
+- Low integration complexity for a first deployment
+
+1. Phishing email triage
+- Very high volume in most teams
+- Clear labels such as spam, phishing, BEC, ham
+- Easy to batch from `.eml` or exported mailboxes
+- Fastest path to measurable analyst time savings
+- well known benchmark datasets
+
+2. SIEM alert classification
+- Large alert volumes and repetitive analyst review
+- Clear output schema: severity, verdict, ATT&CK tags, next action
+- Can be evaluated against historical SOC dispositions
+
+3. Vulnerability advisory prioritization
+- Security teams drown in CVE and vendor bulletin noise
+- Good fit for structured outputs like affected product, exploitability, patch priority
+- Easy to compare with existing remediation decisions
+
+4. IOC extraction from threat intelligence
+- Very useful for downstream enrichment and detection engineering
+- Structured extraction is easy to validate
+- Delivers immediate operational value to multiple teams
+- Can be combined with MISP (misp event -> report -> extract IOCs and compare against the ground truth in the misp event's attributes)
+
+5. Security ticket routing and prioritization
+- Low implementation effort and quick operational payoff
+- Clear classes such as phishing, lost credential, endpoint, IAM, cloud, vuln, AppSec
+- Easy to measure using queue accuracy and handling time
+
+6. False-positive vs true-positive alert labeling
+- Directly reduces analyst fatigue
+- Strong training and evaluation data often already exists in SOC tooling
+- Helps downstream tuning of detections and escalations
+
+7. IAM policy risk review
+- High value because privilege issues are expensive to review manually
+- Structured output can capture risk level, overbroad permissions, and recommended fix
+- Best ROI where policy review volume is already high
+
+8. Cloud misconfiguration triage
+- Good batch candidate from CSPM findings and config exports
+- Clear categories such as public exposure, weak IAM, logging gaps, encryption gaps
+- Useful for prioritization even before full remediation automation
+
+9. Vendor security questionnaire drafting and triage
+- Repetitive, time-consuming work for GRC and security assurance teams
+- Easy to structure outputs by control family and confidence
+- High ROI in organizations with heavy vendor review workloads
+
+10. SAST finding exploitability triage
+- Potentially large payoff, but usually needs more careful tuning than the items above
+- Structured outputs can capture exploitability, confidence, and fix priority
+- ROI is best when paired with good historical finding data

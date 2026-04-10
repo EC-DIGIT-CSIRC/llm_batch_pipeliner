@@ -1,0 +1,4 @@
+Classify each email as spam or ham.
+
+Return JSON with classification, confidence, reason, indicators,
+suspicious_urls, and sender_analysis.

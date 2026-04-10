@@ -1,0 +1,13 @@
+From: alice@example.com
+To: bob@example.com
+Subject: Meeting tomorrow
+Date: Mon, 1 Jan 2024 10:00:00 +0000
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+
+Hi Bob,
+
+Can we meet tomorrow at 3pm to discuss the project?
+
+Thanks,
+Alice

@@ -3,9 +3,14 @@
 from __future__ import annotations
 
 import json
+import shutil
 import textwrap
+import threading
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
+
+import pytest
 
 # ---------------------------------------------------------------------------
 # Sample email bodies
@@ -173,3 +178,147 @@ def write_batch_output_jsonl(
     lines = [json.dumps(r, ensure_ascii=False) for r in records]
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return path
+
+
+# ---------------------------------------------------------------------------
+# Shared fixture batches
+# ---------------------------------------------------------------------------
+
+
+FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures"
+BATCH_ROUNDTRIP_FIXTURE_DIR = FIXTURES_DIR / "batch_roundtrip"
+
+
+@pytest.fixture(scope="session")
+def batch_roundtrip_fixture_dir() -> Path:
+    return BATCH_ROUNDTRIP_FIXTURE_DIR
+
+
+@pytest.fixture()
+def copy_batch_roundtrip_fixture(tmp_path: Path, batch_roundtrip_fixture_dir: Path) -> Path:
+    dest = tmp_path / "batch_roundtrip"
+    shutil.copytree(batch_roundtrip_fixture_dir, dest, dirs_exist_ok=True)
+    return dest
+
+
+# ---------------------------------------------------------------------------
+# Fake Ollama server for e2e tests
+# ---------------------------------------------------------------------------
+
+
+class _FakeOllamaServer(ThreadingHTTPServer):
+    def __init__(self, server_address: tuple[str, int]) -> None:
+        super().__init__(server_address, _FakeOllamaRequestHandler)
+        self.requests: list[dict[str, Any]] = []
+
+
+class _FakeOllamaRequestHandler(BaseHTTPRequestHandler):
+    server: _FakeOllamaServer
+
+    def do_POST(self) -> None:  # noqa: N802
+        content_length = int(self.headers.get("Content-Length", "0") or 0)
+        raw_body = self.rfile.read(content_length) if content_length else b"{}"
+        payload = json.loads(raw_body.decode("utf-8"))
+        self.server.requests.append(payload)
+        response = _build_fake_ollama_response(payload)
+        body = json.dumps(response).encode("utf-8")
+
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, _format: str, *args: Any) -> None:
+        return
+
+
+def _build_fake_ollama_response(payload: dict[str, Any]) -> dict[str, Any]:
+    messages = payload.get("messages", [])
+    content = "\n".join(str(message.get("content", "")) for message in messages if isinstance(message, dict)).lower()
+
+    if content.strip() in {"hi", "hello"}:
+        message = "warmup ok"
+    elif any(token in content for token in ("winner", "prize", "bank details", "urgent", "scam", "cheap-pills")):
+        message = json.dumps(
+            {
+                "classification": "spam",
+                "confidence": 0.99,
+                "reason": "Obvious spam indicators were detected.",
+                "indicators": ["urgent subject", "prize language", "money request"],
+                "suspicious_urls": ["http://scam.example.com/claim"],
+                "sender_analysis": "Suspicious bulk sender domain.",
+            },
+            ensure_ascii=False,
+        )
+    else:
+        message = json.dumps(
+            {
+                "classification": "ham",
+                "confidence": 0.96,
+                "reason": "No spam indicators were detected.",
+                "indicators": ["routine meeting request"],
+                "suspicious_urls": [],
+                "sender_analysis": "Normal personal sender.",
+            },
+            ensure_ascii=False,
+        )
+
+    return {
+        "model": payload.get("model", "gemma4:latest"),
+        "message": {"content": message},
+        "prompt_eval_count": 128,
+        "eval_count": 64,
+        "total_duration": 1_000_000,
+        "load_duration": 100_000,
+        "prompt_eval_duration": 400_000,
+        "eval_duration": 500_000,
+    }
+
+
+@pytest.fixture()
+def fake_ollama_server() -> tuple[str, list[dict[str, Any]]]:
+    server = _FakeOllamaServer(("127.0.0.1", 0))
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    host, port = server.server_address
+    base_url = f"http://{host}:{port}"
+
+    try:
+        yield base_url, server.requests
+    finally:
+        server.shutdown()
+        thread.join(timeout=5)
+        server.server_close()
+
+
+# ---------------------------------------------------------------------------
+# Automatic marker assignment
+# ---------------------------------------------------------------------------
+
+
+_INTEGRATION_TESTS = {"test_pipeline.py", "test_stages.py"}
+_E2E_TESTS = {"test_cli_roundtrip.py"}
+_BENCHMARK_TESTS = {"test_inference_loop.py"}
+
+
+def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
+    for item in items:
+        path = Path(str(getattr(item, "path", item.fspath)))
+        name = path.name
+
+        if "e2e" in path.parts or name in _E2E_TESTS:
+            item.add_marker(pytest.mark.e2e)
+            continue
+
+        if name in _BENCHMARK_TESTS:
+            item.add_marker(pytest.mark.benchmark)
+            continue
+
+        if name in _INTEGRATION_TESTS or name.startswith("test_backends_"):
+            item.add_marker(pytest.mark.integration)
+            if name.startswith("test_backends_"):
+                item.add_marker(pytest.mark.contract)
+            continue
+
+        item.add_marker(pytest.mark.unit)

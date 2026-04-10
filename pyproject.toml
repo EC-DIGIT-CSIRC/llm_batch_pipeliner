@@ -43,6 +43,15 @@ llm-batch-pipeline = "llm_batch_pipeline.cli:main"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+markers = [
+    "unit: fast, pure tests for helpers and serializers",
+    "integration: stage wiring and filesystem tests",
+    "e2e: installed CLI and full batch roundtrip tests",
+    "contract: backend request/response contract tests",
+    "benchmark: inference-speed and threshold checks",
+    "live_openai: tests that require a real OpenAI backend",
+    "live_ollama: tests that require a real Ollama backend",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/llm_batch_pipeline"]

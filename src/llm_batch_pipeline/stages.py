@@ -255,7 +255,9 @@ def stage_validate(ctx: PipelineContext) -> StageResult:
         for row in result.invalid_rows:
             all_invalid.append({"filename": row.custom_id, "error": row.error_message})
 
-        ctx.metrics.record_validation(ctx.config.batch_name, "valid")
+        ctx.metrics.record_validation(ctx.config.batch_name, "valid", result.valid_count)
+        ctx.metrics.record_validation(ctx.config.batch_name, "invalid", result.invalid_count)
+        ctx.metrics.record_validation(ctx.config.batch_name, "skipped", result.skipped_count)
 
     ctx.artifacts["validated_rows"] = all_valid
     ctx.artifacts["validation_errors"] = all_invalid

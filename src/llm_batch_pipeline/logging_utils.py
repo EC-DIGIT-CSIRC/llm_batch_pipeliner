@@ -16,6 +16,7 @@ from __future__ import annotations
 import json
 import logging
 import multiprocessing
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from logging.handlers import QueueHandler, QueueListener
@@ -96,7 +97,12 @@ class LoggingRuntime:
 # ---------------------------------------------------------------------------
 
 
-def start_logging(logs_dir: Path, *, level: str = "INFO") -> LoggingRuntime:
+def start_logging(
+    logs_dir: Path,
+    *,
+    level: str = "INFO",
+    extra_handlers: Sequence[logging.Handler] | None = None,
+) -> LoggingRuntime:
     """Set up queue-based logging and return a :class:`LoggingRuntime`.
 
     Call :func:`stop_logging` when the pipeline finishes.
@@ -118,7 +124,9 @@ def start_logging(logs_dir: Path, *, level: str = "INFO") -> LoggingRuntime:
     console_handler.setLevel(logging.INFO)
     console_handler.addFilter(ConsoleLogFilter())
 
-    listener = QueueListener(queue, pipeline_handler, console_handler, respect_handler_level=True)
+    handlers = (pipeline_handler, console_handler, *(extra_handlers or ()))
+
+    listener = QueueListener(queue, *handlers, respect_handler_level=True)
     listener.start()
 
     _configure_root_logger(queue, level)
@@ -127,7 +135,7 @@ def start_logging(logs_dir: Path, *, level: str = "INFO") -> LoggingRuntime:
         manager=manager,
         queue=queue,
         listener=listener,
-        handlers=(pipeline_handler, console_handler),
+        handlers=handlers,
     )
 
 

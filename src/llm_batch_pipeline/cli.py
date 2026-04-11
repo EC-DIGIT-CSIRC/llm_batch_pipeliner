@@ -29,7 +29,7 @@ from llm_batch_pipeline.config import (
     load_batch_toml,
     resolve_batch_dir,
 )
-from llm_batch_pipeline.logging_utils import start_logging, stop_logging
+from llm_batch_pipeline.logging_utils import JsonFormatter, start_logging, stop_logging
 from llm_batch_pipeline.metrics import MetricsCollector
 from llm_batch_pipeline.pipeline import PipelineContext
 from llm_batch_pipeline.plugins.registry import list_plugins
@@ -88,13 +88,6 @@ def _add_common_args(parser: argparse.ArgumentParser) -> None:
         default="INFO",
         choices=["DEBUG", "INFO", "WARNING", "ERROR"],
         help="Logging level (default: INFO)",
-    )
-    parser.add_argument(
-        "--metrics-port",
-        dest="metrics_port",
-        type=int,
-        default=None,
-        help="Port for Prometheus metrics HTTP server (disabled by default)",
     )
 
 
@@ -322,7 +315,6 @@ def _apply_cli_overrides(config: BatchConfig, args: argparse.Namespace) -> None:
         "label_field": "label_field",
         "confidence_field": "confidence_field",
         "positive_class": "positive_class",
-        "metrics_port": "metrics_port",
         "log_level": "log_level",
         "auto_approve": "auto_approve",
         "start_from": "start_from",
@@ -388,10 +380,7 @@ def _cmd_run(args: argparse.Namespace) -> int:
     from llm_batch_pipeline.stages import build_pipeline  # noqa: PLC0415
 
     config = _build_config(args)
-    console = Console()
-    metrics = MetricsCollector(port=config.metrics_port)
-
-    logging_runtime = start_logging(config.logs_dir, level=config.log_level)
+    console, metrics, logging_runtime = _start_command_runtime(config)
     try:
         pipeline = build_pipeline(config, console=console)
         ctx = PipelineContext(
@@ -411,6 +400,7 @@ def _cmd_run(args: argparse.Namespace) -> int:
         return 0
     finally:
         stop_logging(logging_runtime)
+        metrics.shutdown()
 
 
 def _cmd_render(args: argparse.Namespace) -> int:
@@ -424,10 +414,7 @@ def _cmd_render(args: argparse.Namespace) -> int:
     )
 
     config = _build_config(args)
-    console = Console()
-    metrics = MetricsCollector(port=config.metrics_port)
-
-    logging_runtime = start_logging(config.logs_dir, level=config.log_level)
+    console, metrics, logging_runtime = _start_command_runtime(config)
     try:
         ctx = PipelineContext(
             batch_dir=config.batch_dir,
@@ -448,6 +435,7 @@ def _cmd_render(args: argparse.Namespace) -> int:
         return 0
     finally:
         stop_logging(logging_runtime)
+        metrics.shutdown()
 
 
 def _cmd_submit(args: argparse.Namespace) -> int:
@@ -455,10 +443,7 @@ def _cmd_submit(args: argparse.Namespace) -> int:
     from llm_batch_pipeline.stages import stage_submit  # noqa: PLC0415
 
     config = _build_config(args)
-    console = Console()
-    metrics = MetricsCollector(port=config.metrics_port)
-
-    logging_runtime = start_logging(config.logs_dir, level=config.log_level)
+    console, metrics, logging_runtime = _start_command_runtime(config)
     try:
         ctx = PipelineContext(
             batch_dir=config.batch_dir,
@@ -492,6 +477,7 @@ def _cmd_submit(args: argparse.Namespace) -> int:
         return 0
     finally:
         stop_logging(logging_runtime)
+        metrics.shutdown()
 
 
 def _cmd_validate(args: argparse.Namespace) -> int:
@@ -499,10 +485,7 @@ def _cmd_validate(args: argparse.Namespace) -> int:
     from llm_batch_pipeline.stages import stage_validate  # noqa: PLC0415
 
     config = _build_config(args)
-    console = Console()
-    metrics = MetricsCollector(port=config.metrics_port)
-
-    logging_runtime = start_logging(config.logs_dir, level=config.log_level)
+    console, metrics, logging_runtime = _start_command_runtime(config)
     try:
         ctx = PipelineContext(
             batch_dir=config.batch_dir,
@@ -545,6 +528,7 @@ def _cmd_validate(args: argparse.Namespace) -> int:
         return 0
     finally:
         stop_logging(logging_runtime)
+        metrics.shutdown()
 
 
 def _cmd_evaluate(args: argparse.Namespace) -> int:
@@ -554,10 +538,7 @@ def _cmd_evaluate(args: argparse.Namespace) -> int:
     from llm_batch_pipeline.stages import stage_evaluate  # noqa: PLC0415
 
     config = _build_config(args)
-    console = Console()
-    metrics = MetricsCollector(port=config.metrics_port)
-
-    logging_runtime = start_logging(config.logs_dir, level=config.log_level)
+    console, metrics, logging_runtime = _start_command_runtime(config)
     try:
         ctx = PipelineContext(
             batch_dir=config.batch_dir,
@@ -580,6 +561,7 @@ def _cmd_evaluate(args: argparse.Namespace) -> int:
         return 0
     finally:
         stop_logging(logging_runtime)
+        metrics.shutdown()
 
 
 def _cmd_export(args: argparse.Namespace) -> int:
@@ -590,10 +572,7 @@ def _cmd_export(args: argparse.Namespace) -> int:
     from llm_batch_pipeline.stages import stage_export  # noqa: PLC0415
 
     config = _build_config(args)
-    console = Console()
-    metrics = MetricsCollector(port=config.metrics_port)
-
-    logging_runtime = start_logging(config.logs_dir, level=config.log_level)
+    console, metrics, logging_runtime = _start_command_runtime(config)
     try:
         ctx = PipelineContext(
             batch_dir=config.batch_dir,
@@ -625,6 +604,7 @@ def _cmd_export(args: argparse.Namespace) -> int:
         return 0
     finally:
         stop_logging(logging_runtime)
+        metrics.shutdown()
 
 
 def _cmd_list(_args: argparse.Namespace) -> int:
@@ -639,6 +619,18 @@ def _cmd_list(_args: argparse.Namespace) -> int:
     for name in plugins:
         console.print(f"  - {name}")
     return 0
+
+
+def _start_command_runtime(config: BatchConfig) -> tuple[Console, MetricsCollector, object]:
+    """Create console, telemetry, and logging runtime for a command."""
+    console = Console()
+    metrics = MetricsCollector()
+    otel_handler = metrics.build_log_handler()
+    if otel_handler is not None:
+        otel_handler.setFormatter(JsonFormatter())
+    extra_handlers = [otel_handler] if otel_handler is not None else None
+    logging_runtime = start_logging(config.logs_dir, level=config.log_level, extra_handlers=extra_handlers)
+    return console, metrics, logging_runtime
 
 
 # ---------------------------------------------------------------------------

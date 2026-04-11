@@ -123,7 +123,6 @@ uv run llm-batch-pipeline export \
 | `--batch-dir DIR` | Batch job directory (auto-resolved by name) |
 | `--batch-jobs-root DIR` | Root for batch dirs (default: `./batches`) |
 | `--log-level LEVEL` | `DEBUG`, `INFO`, `WARNING`, `ERROR` (default: `INFO`) |
-| `--metrics-port PORT` | Prometheus metrics HTTP port (disabled by default) |
 
 ### `init` — Create a Batch Job
 
@@ -337,18 +336,24 @@ Detects personally identifiable information (PII) in emails.
 
 ## Metrics and Observability
 
-### Prometheus Metrics
+### OTLP Metrics and Logs
 
-Enable the Prometheus metrics HTTP server with `--metrics-port`:
+Telemetry is exported to an OpenTelemetry Collector when standard OTLP environment variables are set:
 
 ```bash
-uv run llm-batch-pipeline run --metrics-port 9090 ...
+export OTEL_SERVICE_NAME=llm-batch-pipeline
+export OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
 ```
 
-Exposed metrics include:
-- `pipeline_stage_duration_seconds` — histogram per stage
-- `pipeline_requests_total` — counter for processed requests
-- `pipeline_active_requests` — gauge for in-flight requests
+The pipeline emits these metric series:
+- `llm_batch_pipeline_runs_total`
+- `llm_batch_pipeline_stage_duration_seconds`
+- `llm_batch_pipeline_requests_total`
+- `llm_batch_pipeline_request_duration_seconds`
+- `llm_batch_pipeline_active_requests`
+- `llm_batch_pipeline_validation_total`
+
+Structured logs continue to be written locally to `logs/pipeline.jsonl` and are also sent to the Collector when OTLP log export is configured.
 
 ### Local Metrics
 

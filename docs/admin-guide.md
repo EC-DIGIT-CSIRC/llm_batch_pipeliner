@@ -32,8 +32,9 @@ All dependencies are pinned in `uv.lock`. The project follows a strict supply ch
 |---------|---------|---------|
 | `httpx` | Ollama HTTP client | BSD-3 |
 | `openai` | OpenAI API client | Apache-2.0 |
+| `opentelemetry-sdk` | Metrics and log SDK | Apache-2.0 |
+| `opentelemetry-exporter-otlp-proto-http` | OTLP/HTTP exporter | Apache-2.0 |
 | `openpyxl` | XLSX export | MIT |
-| `prometheus-client` | Metrics (zero transitive deps) | Apache-2.0 |
 | `pydantic` | Schema validation | MIT |
 | `python-dotenv` | Environment file loading | BSD-3 |
 | `rich` | Terminal UI | MIT |
@@ -113,31 +114,88 @@ uv run llm-batch-pipeline submit \
 
 ## Monitoring
 
-### Prometheus + Grafana
+### OpenTelemetry Collector + Prometheus + Grafana
 
-Enable metrics collection with `--metrics-port`:
+The pipeline no longer exposes a local Prometheus scrape endpoint. Instead, it sends OTLP telemetry to an OpenTelemetry Collector.
+
+Set these environment variables before running the pipeline:
 
 ```bash
-uv run llm-batch-pipeline run --metrics-port 9090 ...
+export OTEL_SERVICE_NAME=llm-batch-pipeline
+export OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
 ```
 
-Add to your `prometheus.yml`:
+Relevant upstream docs:
+- OpenTelemetry Collector: <https://opentelemetry.io/docs/collector/>
+- Prometheus with OpenTelemetry: <https://prometheus.io/docs/guides/opentelemetry/>
 
-```yaml
-scrape_configs:
-  - job_name: 'llm-batch-pipeline'
-    static_configs:
-      - targets: ['localhost:9090']
-```
+TL;DR local setup:
 
-Available metrics:
+1. Start an OpenTelemetry Collector that receives OTLP over HTTP and exposes Prometheus metrics:
+
+   ```yaml
+   receivers:
+     otlp:
+       protocols:
+         http:
+           endpoint: 0.0.0.0:4318
+
+   processors:
+     batch:
+
+   exporters:
+     prometheus:
+       endpoint: 0.0.0.0:9464
+     debug:
+       verbosity: normal
+
+   service:
+     pipelines:
+       metrics:
+         receivers: [otlp]
+         processors: [batch]
+         exporters: [prometheus]
+       logs:
+         receivers: [otlp]
+         processors: [batch]
+         exporters: [debug]
+   ```
+
+2. Run the Collector:
+
+   ```bash
+   docker run --rm \
+     -p 4318:4318 \
+     -p 9464:9464 \
+     -v "$(pwd)/otel-collector.yaml:/etc/otelcol-contrib/config.yaml" \
+     otel/opentelemetry-collector-contrib
+   ```
+
+3. Point Prometheus at the Collector's Prometheus exporter:
+
+   ```yaml
+   scrape_configs:
+     - job_name: llm-batch-pipeline
+       static_configs:
+         - targets: ['localhost:9464']
+   ```
+
+   Replace `localhost` with the Collector hostname if Prometheus runs on a different machine or container network.
+
+4. Add that Prometheus server as a Grafana datasource.
+
+Prometheus-visible metric names:
 
 | Metric | Type | Description |
 |--------|------|-------------|
-| `pipeline_stage_duration_seconds` | Histogram | Duration per pipeline stage |
-| `pipeline_requests_total` | Counter | Total processed requests |
-| `pipeline_requests_failed_total` | Counter | Failed requests |
-| `pipeline_active_requests` | Gauge | Currently in-flight requests |
+| `llm_batch_pipeline_runs_total` | Counter | Full pipeline runs by status |
+| `llm_batch_pipeline_stage_duration_seconds` | Histogram | Duration per pipeline stage |
+| `llm_batch_pipeline_requests_total` | Counter | LLM requests by backend/model/status |
+| `llm_batch_pipeline_request_duration_seconds` | Histogram | LLM request latency |
+| `llm_batch_pipeline_active_requests` | UpDownCounter | In-flight LLM requests |
+| `llm_batch_pipeline_validation_total` | Counter | Validation rows by status |
+
+Prometheus stores metrics only. If you want logs in Grafana, add a log backend such as Loki to the Collector or use Grafana Alloy and route the OTLP log stream there.
 
 ### Log Files
 

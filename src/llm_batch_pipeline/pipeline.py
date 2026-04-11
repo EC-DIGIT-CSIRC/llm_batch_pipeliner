@@ -151,6 +151,8 @@ class Pipeline:
             self._print_dry_run()
             return results
 
+        ctx.metrics.record_run("run", "started")
+
         log_event(
             logger,
             f"Pipeline '{self.name}' starting",
@@ -202,6 +204,7 @@ class Pipeline:
 
         total_ms = (time.perf_counter_ns() - pipeline_start) / 1_000_000
         all_ok = all(r.status in ("completed", "skipped") for r in results)
+        ctx.metrics.record_run("run", "completed" if all_ok else "failed")
 
         log_event(
             logger,

@@ -28,8 +28,6 @@ DEFAULT_BATCH_POLL_INTERVAL_SECONDS: int = 15
 DEFAULT_OLLAMA_NUM_PARALLEL_JOBS: int = 3
 DEFAULT_OLLAMA_REQUEST_TIMEOUT_SECONDS: int = 600
 
-DEFAULT_METRICS_PORT: int = 9090
-
 BATCH_DIR_PREFIX: str = "batch_"
 
 
@@ -82,7 +80,6 @@ class BatchConfig:
     positive_class: str | None = None
 
     # Observability
-    metrics_port: int | None = None  # None = metrics HTTP server disabled
     log_level: str = "INFO"
 
     # Workflow

@@ -224,3 +224,4 @@ batches/*
 
 .ruff_cache/*
 docs/session.txt
+session-ses_28e7-lost-all-models.md

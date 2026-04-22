@@ -17,6 +17,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import statistics
 import time
 import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -231,6 +232,17 @@ class OllamaBackend(BatchBackend):
 
         # Sort results by original index for deterministic output
         all_results.sort(key=lambda r: r.index)
+
+        row_summary = _summarise_row_results(all_results)
+        log_event(
+            logger,
+            f"Row summary: {row_summary['rows_success']}/{row_summary['rows_total']} succeeded",
+            step="submit",
+            status="row_summary",
+            batch_id=batch_id,
+            model=config.model,
+            **row_summary,
+        )
 
         # Write output
         output_lines = []
@@ -552,6 +564,35 @@ def _build_error_record(custom_id: str, exc: Exception) -> dict[str, Any]:
             "message": str(exc),
         },
         "response": None,
+    }
+
+
+def _summarise_row_results(results: list[OllamaExecutionResult]) -> dict[str, int | float]:
+    """Compute row-level timing and outcome stats for a completed batch."""
+    durations = [result.duration_ms for result in results]
+    rows_total = len(results)
+    rows_success = sum(1 for result in results if result.success_record)
+    rows_failed = rows_total - rows_success
+
+    if not durations:
+        return {
+            "rows_total": rows_total,
+            "rows_success": rows_success,
+            "rows_failed": rows_failed,
+            "row_duration_avg_ms": 0.0,
+            "row_duration_p50_ms": 0.0,
+            "row_duration_min_ms": 0.0,
+            "row_duration_max_ms": 0.0,
+        }
+
+    return {
+        "rows_total": rows_total,
+        "rows_success": rows_success,
+        "rows_failed": rows_failed,
+        "row_duration_avg_ms": round(statistics.fmean(durations), 3),
+        "row_duration_p50_ms": round(statistics.median(durations), 3),
+        "row_duration_min_ms": round(min(durations), 3),
+        "row_duration_max_ms": round(max(durations), 3),
     }
 
 

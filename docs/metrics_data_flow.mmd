@@ -1,0 +1,31 @@
+flowchart TD
+    subgraph Pipeline_Code[Pipeline Code]
+        A1[with timed()] 
+        A2[MetricsCollector.record_stage()]
+        A3[MetricsCollector.record_request()]
+        A4[MetricsCollector.record_validation()]
+        A5[estimate_tokens()]
+    end
+    subgraph MetricsCollector[MetricsCollector]
+        B1[Prometheus Counters/Histograms/Gauges]
+        B2[Local StageStats]
+        B3[write_summary() → metrics.json]
+        B4[Optional HTTP Server]
+    end
+    subgraph Prometheus[Prometheus/Grafana]
+        C1[Scrape /metrics]
+    end
+    subgraph Disk[Disk]
+        D1[metrics.json]
+    end
+    
+    A1 -- duration_ms --> Pipeline_Code
+    A2 -- stage timing --> B1
+    A2 -- stage timing --> B2
+    A3 -- request timing --> B1
+    A4 -- validation result --> B1
+    B1 -- metrics --> B4
+    B4 -- /metrics endpoint --> C1
+    B2 -- stats --> B3
+    B3 -- write --> D1
+    A5 -- token estimate --> Pipeline_Code

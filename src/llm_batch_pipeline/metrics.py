@@ -16,6 +16,7 @@ import json
 import logging
 import os
 import time
+import uuid
 from collections.abc import Generator
 from contextlib import contextmanager, suppress
 from dataclasses import dataclass
@@ -152,6 +153,8 @@ class MetricsCollector:
     def __init__(self, *, port: int | None = None) -> None:
         del port
         self._local_stats: dict[str, StageStats] = {}
+        self.instance_id = uuid.uuid4().hex
+        self.run_key = _make_run_key(self.instance_id)
 
         self._meter_provider: MeterProvider | None = None
         self._logger_provider: LoggerProvider | None = None
@@ -163,7 +166,7 @@ class MetricsCollector:
         self._request_duration_seconds = None
         self._validation_total = None
 
-        resource = _build_resource()
+        resource = _build_resource(self.instance_id, self.run_key)
 
         if _metrics_export_enabled():
             reader = PeriodicExportingMetricReader(OTLPMetricExporter())
@@ -271,13 +274,20 @@ class MetricsCollector:
 # ---------------------------------------------------------------------------
 
 
-def _build_resource() -> Resource:
+def _build_resource(instance_id: str, run_key: str) -> Resource:
     return Resource.create(
         {
             "service.name": os.getenv("OTEL_SERVICE_NAME", "llm-batch-pipeline"),
             "service.version": _package_version(),
+            "service.instance.id": instance_id,
+            "service.run_key": run_key,
         }
     )
+
+
+def _make_run_key(instance_id: str) -> str:
+    started_at = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
+    return f"{started_at}_{instance_id[:12]}"
 
 
 def _metrics_export_enabled() -> bool:

@@ -1,0 +1,55 @@
+services:
+  loki-bee:
+    image: grafana/loki:latest
+    command: -config.file=/etc/loki/local-config.yaml
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    volumes:
+      - loki-bee-data:/loki
+    networks:
+      - observability
+      - web
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "web"
+      traefik.http.routers.loki_bee.entrypoints: "websecure"
+      traefik.http.routers.loki_bee.priority: "100"
+      traefik.http.routers.loki_bee.rule: "Host(`bee.lo-res.org`) && PathPrefix(`/loki`)"
+      traefik.http.routers.loki_bee.tls: "true"
+      traefik.http.services.loki_bee.loadbalancer.server.port: "3100"
+
+  prometheus-bee:
+    image: prom/prometheus:latest
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - /home/aaron/otel-collector/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-bee-data:/prometheus
+    networks:
+      - observability
+      - web
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "web"
+      traefik.http.routers.prometheus_bee.entrypoints: "websecure"
+      traefik.http.routers.prometheus_bee.priority: "100"
+      traefik.http.routers.prometheus_bee.rule: "Host(`bee.lo-res.org`) && PathPrefix(`/prometheus`)"
+      traefik.http.routers.prometheus_bee.tls: "true"
+      traefik.http.routers.prometheus_bee.middlewares: "prometheus_bee_strip@docker"
+      traefik.http.middlewares.prometheus_bee_strip.stripprefix.prefixes: "/prometheus"
+      traefik.http.services.prometheus_bee.loadbalancer.server.port: "9090"
+
+networks:
+  observability:
+    external: true
+  web:
+    external: true
+
+volumes:
+  loki-bee-data:
+  prometheus-bee-data:

@@ -1,0 +1,68 @@
+services:
+  traefik:
+    image: traefik:v3.5
+    command:
+      - "--api.insecure=false"
+      - "--api.dashboard=false"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entryPoints.websecure.http.tls=true"
+      - "--entryPoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entryPoints.web.http.redirections.entryPoint.scheme=https"
+      - "--certificatesresolvers.le.acme.email=aaron+letsencrypt@lo-res.org"
+      - "--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.le.acme.httpchallenge.entrypoint=web"
+      - "--log.level=INFO"
+      - "--log.filePath=/var/log/traefik/traefik.log"
+      - "--accesslog=true"
+      - "--accesslog.format=common"
+      - "--accesslog.filepath=/var/log/traefik/access.log"
+      - "--accesslog.bufferingsize=1"
+      - "--accesslog.fields.defaultmode=keep"
+      - "--accesslog.fields.headers.defaultmode=keep"
+    environment:
+      DOCKER_API_VERSION: "1.41"
+    networks:
+      - web
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "/var/log/traefik:/var/log/traefik"
+      - "./certs:/certs:ro"
+      - "./dynamic:/etc/traefik/dynamic:ro"
+      - "./letsencrypt:/letsencrypt"
+    labels:
+      - "traefik.enable=true"
+    restart: unless-stopped
+
+  whoami:
+    image: traefik/whoami
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.whoami.rule=Host(`bee.lo-res.org`)"
+      - "traefik.http.routers.whoami.entrypoints=web"
+      - "traefik.http.routers.whoami.tls=true"
+      - "traefik.http.routers.whoami.tls.certresolver=le"
+
+  whoami-api:
+    image: traefik/whoami
+    networks:
+      - web
+    container_name: whoami-api
+    environment:
+      WHOAMI_NAME: API Service
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.whoami-api.rule=Host(`bee.lo-res.org`) && PathPrefix(`/apitest`)"
+      - "traefik.http.routers.whoami-api.entrypoints=websecure"
+      - "traefik.http.routers.whoami-api.tls.certresolver=le"
+      - "traefik.http.routers.whoami-api.tls=true"
+
+networks:
+  web:
+    external: true

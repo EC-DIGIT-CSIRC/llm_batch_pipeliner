@@ -116,7 +116,7 @@ uv run llm-batch-pipeline submit \
 
 ### OpenTelemetry Collector + Prometheus + Grafana
 
-The pipeline no longer exposes a local Prometheus scrape endpoint. Instead, it sends OTLP telemetry to an OpenTelemetry Collector.
+The pipeline sends OTLP telemetry to an OpenTelemetry Collector.
 
 Set these environment variables before running the pipeline:
 
@@ -124,6 +124,41 @@ Set these environment variables before running the pipeline:
 export OTEL_SERVICE_NAME=llm-batch-pipeline
 export OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
 ```
+
+Concrete shared test setup:
+
+```bash
+export OTEL_SERVICE_NAME=llm-batch-pipeline
+export OTEL_EXPORTER_OTLP_ENDPOINT=http://bee.lo-res.org:4318
+```
+
+The Collector currently deployed on `bee.lo-res.org` exposes:
+- OTLP/HTTP ingest: `http://bee.lo-res.org:4318`
+- Prometheus scrape endpoint: `http://bee.lo-res.org:9464/metrics`
+- Traefik-routed Prometheus API: `https://bee.lo-res.org/prometheus`
+- Traefik-routed Loki API: `https://bee.lo-res.org/loki`
+
+The deployed Collector config is tracked in this repository at `docs/otel-collector-bee.yaml`.
+The Bee-side Prometheus/Loki Docker Compose file is tracked at `docs/bee-observability-compose.yml`.
+
+Grafana test instance:
+- URL: `http://grafana-test.intelmq.org:3000`
+- Datasources created: `Prometheus Bee`, `Loki Bee`
+- Dashboard imported: `LLM Batch Pipeline Overview`
+- Dashboard URL: `http://grafana-test.intelmq.org:3000/d/llm-batch-pipeline-overview/llm-batch-pipeline-overview`
+- Comparison dashboard imported: `LLM Batch Pipeline Run Comparison`
+- Comparison dashboard URL: `http://grafana-test.intelmq.org:3000/d/llm-batch-pipeline-run-comparison/llm-batch-pipeline-run-comparison`
+- Drilldown dashboard imported: `LLM Batch Pipeline Run Drilldown`
+- Drilldown dashboard URL: `http://grafana-test.intelmq.org:3000/d/llm-batch-pipeline-run-drilldown/llm-batch-pipeline-run-drilldown`
+- Dashboard definition in repo: `docs/llm-batch-pipeline-dashboard.json`
+- Comparison dashboard definition in repo: `docs/llm-batch-pipeline-run-comparison-dashboard.json`
+- Drilldown dashboard definition in repo: `docs/llm-batch-pipeline-run-drilldown-dashboard.json`
+
+Dashboard notes:
+- The detailed per-stage and per-row panels require pipeline runs with `--log-level INFO`.
+- The dashboard has a `Run Key` textbox for the selected-run panels.
+- The default `Run Key` is seeded to the latest verified run when the dashboard JSON is imported.
+- To inspect an older run, copy its `service_run_key` from the `Recent Completed Runs` panel and paste it into the `Run Key` textbox.
 
 Relevant upstream docs:
 - OpenTelemetry Collector: <https://opentelemetry.io/docs/collector/>
@@ -184,6 +219,13 @@ TL;DR local setup:
 
 4. Add that Prometheus server as a Grafana datasource.
 
+To verify the pipeline is exporting telemetry to the shared `bee` collector:
+
+```bash
+curl -fsS http://bee.lo-res.org:9464/metrics | rg "llm_batch_pipeline"
+ssh bee "docker logs --since 5m otel-collector-bee 2>&1" | rg "llm_batch_pipeline|llm-batch-pipeline"
+```
+
 Prometheus-visible metric names:
 
 | Metric | Type | Description |
@@ -196,6 +238,8 @@ Prometheus-visible metric names:
 | `llm_batch_pipeline_validation_total` | Counter | Validation rows by status |
 
 Prometheus stores metrics only. If you want logs in Grafana, add a log backend such as Loki to the Collector or use Grafana Alloy and route the OTLP log stream there.
+
+For the shared Bee setup, Loki is already wired behind the Collector and routed through Traefik. The imported Grafana dashboard uses Loki for per-run and per-stage analytics because batch-job logs preserve the event timestamps needed for success-rate and average-duration queries over a selected time range.
 
 ### Log Files
 

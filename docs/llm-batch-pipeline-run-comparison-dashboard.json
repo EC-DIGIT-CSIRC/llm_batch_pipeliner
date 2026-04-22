@@ -1,0 +1,1198 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-bee"
+          },
+          "editorMode": "code",
+          "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.pipeline\" | step=\"pipeline\" | status=\"completed\" | unwrap duration_ms [30d])",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Selected Run Duration",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "value"
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 3,
+        "x": 6,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-bee"
+          },
+          "editorMode": "code",
+          "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.backends.ollama\" | step=\"submit\" | status=\"row_summary\" | unwrap rows_total [30d])",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Rows Total",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "value"
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 3,
+        "x": 9,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-bee"
+          },
+          "editorMode": "code",
+          "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.backends.ollama\" | step=\"submit\" | status=\"row_summary\" | unwrap rows_success [30d])",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Rows Success",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "value"
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 3,
+        "x": 12,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-bee"
+          },
+          "editorMode": "code",
+          "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.backends.ollama\" | step=\"submit\" | status=\"row_summary\" | unwrap rows_failed [30d])",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Rows Failed",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 3,
+        "x": 15,
+        "y": 0
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-bee"
+          },
+          "editorMode": "code",
+          "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.backends.ollama\" | step=\"submit\" | status=\"row_summary\" | unwrap row_duration_avg_ms [30d])",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Row Avg",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 3,
+        "x": 18,
+        "y": 0
+      },
+      "id": 6,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-bee"
+          },
+          "editorMode": "code",
+          "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.backends.ollama\" | step=\"submit\" | status=\"row_summary\" | unwrap row_duration_p50_ms [30d])",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Row P50",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 3,
+        "x": 21,
+        "y": 0
+      },
+      "id": 7,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-bee"
+          },
+          "editorMode": "code",
+          "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.backends.ollama\" | step=\"submit\" | status=\"row_summary\" | unwrap row_duration_max_ms [30d])",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Row Max",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 5
+      },
+      "id": 8,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.8,
+        "fullHighlight": false,
+        "groupWidth": 0.8,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "orientation": "vertical",
+        "showValue": "always",
+        "stacking": "off",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xField": "stage",
+        "xTickLabelRotation": -45,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-bee"
+          },
+          "editorMode": "code",
+          "expr": "1000 * max by (stage) (last_over_time(llm_batch_pipeline_stage_duration_seconds_sum{status=\"completed\",service_run_key=\"$run_key\"}[30d]))",
+          "legendFormat": "{{stage}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Selected Run Stage Durations",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns"
+          }
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "stage": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "Value": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
+              }
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true
+            },
+            "indexByName": {
+              "stage": 0,
+              "Value (lastNotNull)": 1
+            },
+            "renameByName": {
+              "Value (lastNotNull)": "duration_ms"
+            }
+          }
+        }
+      ],
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 5
+      },
+      "id": 9,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.8,
+        "fullHighlight": false,
+        "groupWidth": 0.8,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "orientation": "vertical",
+        "showValue": "always",
+        "stacking": "off",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xField": "stage",
+        "xTickLabelRotation": -45,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-bee"
+          },
+          "editorMode": "code",
+          "expr": "1000 * avg by (stage) (last_over_time(llm_batch_pipeline_stage_duration_seconds_sum{status=\"completed\",service_run_key!=\"\"}[30d]))",
+          "legendFormat": "{{stage}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Historical Avg Stage Durations",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns"
+          }
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "stage": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "Value": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
+              }
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true
+            },
+            "indexByName": {
+              "stage": 0,
+              "Value (lastNotNull)": 1
+            },
+            "renameByName": {
+              "Value (lastNotNull)": "duration_ms"
+            }
+          }
+        }
+      ],
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 5
+      },
+      "id": 10,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.8,
+        "fullHighlight": false,
+        "groupWidth": 0.8,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "orientation": "vertical",
+        "showValue": "always",
+        "stacking": "off",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xField": "stage",
+        "xTickLabelRotation": -45,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-bee"
+          },
+          "editorMode": "code",
+          "expr": "1000 * max by (stage) (last_over_time(llm_batch_pipeline_stage_duration_seconds_sum{status=\"completed\",service_run_key!=\"\"}[30d]))",
+          "legendFormat": "{{stage}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Historical Max Stage Durations",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns"
+          }
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "stage": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "Value": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
+              }
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true
+            },
+            "indexByName": {
+              "stage": 0,
+              "Value (lastNotNull)": 1
+            },
+            "renameByName": {
+              "Value (lastNotNull)": "duration_ms"
+            }
+          }
+        }
+      ],
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "gray"
+          },
+          "unit": "ms"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^LATEST"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "green"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 13
+      },
+      "id": 11,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.8,
+        "fullHighlight": false,
+        "groupWidth": 0.8,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "vertical",
+        "showValue": "never",
+        "stacking": "off",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "all",
+          "sort": "descending"
+        },
+        "xField": "stage",
+        "xTickLabelRotation": -45,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-bee"
+          },
+          "editorMode": "code",
+          "expr": "label_replace(1000 * max by (service_run_key, stage) (last_over_time(llm_batch_pipeline_stage_duration_seconds_sum{status=\"completed\",service_run_key=\"$latest_run\"}[30d])), \"service_run_key\", \"LATEST\", \"service_run_key\", \".*\")",
+          "legendFormat": "{{service_run_key}}",
+          "range": false,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-bee"
+          },
+          "editorMode": "code",
+          "expr": "label_replace(1000 * max by (service_run_key, stage) (last_over_time(llm_batch_pipeline_stage_duration_seconds_sum{status=\"completed\",service_run_key=\"$prev_run_1\"}[30d])), \"service_run_key\", \"PREV1\", \"service_run_key\", \".*\")",
+          "legendFormat": "{{service_run_key}}",
+          "range": false,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-bee"
+          },
+          "editorMode": "code",
+          "expr": "label_replace(1000 * max by (service_run_key, stage) (last_over_time(llm_batch_pipeline_stage_duration_seconds_sum{status=\"completed\",service_run_key=\"$prev_run_2\"}[30d])), \"service_run_key\", \"PREV2\", \"service_run_key\", \".*\")",
+          "legendFormat": "{{service_run_key}}",
+          "range": false,
+          "refId": "C"
+        }
+      ],
+      "title": "Stage Duration Across Last 3 Runs",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns",
+            "valueLabel": "service_run_key"
+          }
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "stage": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "LATEST": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
+              },
+              "PREV1": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
+              },
+              "PREV2": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
+              }
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true
+            },
+            "indexByName": {
+              "stage": 0,
+              "LATEST (lastNotNull)": 1,
+              "PREV1 (lastNotNull)": 2,
+              "PREV2 (lastNotNull)": 3
+            },
+            "renameByName": {
+              "LATEST (lastNotNull)": "LATEST",
+              "PREV1 (lastNotNull)": "PREV1",
+              "PREV2 (lastNotNull)": "PREV2"
+            }
+          }
+        }
+      ],
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "gray"
+          },
+          "unit": "none"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^LATEST"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "green"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 25
+      },
+      "id": 12,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.8,
+        "fullHighlight": false,
+        "groupWidth": 0.8,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "vertical",
+        "showValue": "always",
+        "stacking": "off",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "all",
+          "sort": "descending"
+        },
+        "xField": "outcome",
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-bee"
+          },
+          "editorMode": "code",
+          "expr": "(avg by (service_run_key, outcome) (last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$latest_run\" | json | logger=\"llm_batch_pipeline.backends.ollama\" | step=\"submit\" | status=\"row_summary\" | label_format service_run_key=\"LATEST\" | label_format outcome=\"success\" | unwrap rows_success [30d]))) or (avg by (service_run_key, outcome) (last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$latest_run\" | json | logger=\"llm_batch_pipeline.backends.ollama\" | step=\"submit\" | status=\"row_summary\" | label_format service_run_key=\"LATEST\" | label_format outcome=\"failed\" | unwrap rows_failed [30d])))",
+          "queryType": "instant",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-bee"
+          },
+          "editorMode": "code",
+          "expr": "(avg by (service_run_key, outcome) (last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$prev_run_1\" | json | logger=\"llm_batch_pipeline.backends.ollama\" | step=\"submit\" | status=\"row_summary\" | label_format service_run_key=\"PREV1\" | label_format outcome=\"success\" | unwrap rows_success [30d]))) or (avg by (service_run_key, outcome) (last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$prev_run_1\" | json | logger=\"llm_batch_pipeline.backends.ollama\" | step=\"submit\" | status=\"row_summary\" | label_format service_run_key=\"PREV1\" | label_format outcome=\"failed\" | unwrap rows_failed [30d])))",
+          "queryType": "instant",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-bee"
+          },
+          "editorMode": "code",
+          "expr": "(avg by (service_run_key, outcome) (last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$prev_run_2\" | json | logger=\"llm_batch_pipeline.backends.ollama\" | step=\"submit\" | status=\"row_summary\" | label_format service_run_key=\"PREV2\" | label_format outcome=\"success\" | unwrap rows_success [30d]))) or (avg by (service_run_key, outcome) (last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$prev_run_2\" | json | logger=\"llm_batch_pipeline.backends.ollama\" | step=\"submit\" | status=\"row_summary\" | label_format service_run_key=\"PREV2\" | label_format outcome=\"failed\" | unwrap rows_failed [30d])))",
+          "queryType": "instant",
+          "refId": "C"
+        }
+      ],
+      "title": "Row Outcomes Across Last 3 Runs",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns",
+            "valueLabel": "service_run_key"
+          }
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "outcome": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "LATEST": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
+              },
+              "PREV1": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
+              },
+              "PREV2": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
+              }
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true
+            },
+            "indexByName": {
+              "outcome": 0,
+              "LATEST (lastNotNull)": 1,
+              "PREV1 (lastNotNull)": 2,
+              "PREV2 (lastNotNull)": 3
+            },
+            "renameByName": {
+              "LATEST (lastNotNull)": "LATEST",
+              "PREV1 (lastNotNull)": "PREV1",
+              "PREV2 (lastNotNull)": "PREV2"
+            }
+          }
+        }
+      ],
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 25
+      },
+      "id": 13,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-bee"
+          },
+          "editorMode": "code",
+          "expr": "{service_name=\"llm-batch-pipeline\"} | json | logger=\"llm_batch_pipeline.pipeline\" | step=\"pipeline\" | status=\"completed\"",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Recent Completed Runs",
+      "type": "logs"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 41,
+  "tags": [
+    "llm-batch-pipeline",
+    "comparison",
+    "prometheus",
+    "loki",
+    "ollama"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": true,
+          "text": "20260415T042333Z_bfef09a1ec30",
+          "value": "20260415T042333Z_bfef09a1ec30"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus-bee"
+        },
+        "definition": "label_values(llm_batch_pipeline_runs_total{command=\"run\",status=\"completed\",service_run_key!=\"\"}, service_run_key)",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Selected Run",
+        "multi": false,
+        "name": "run_key",
+        "options": [],
+        "query": "label_values(llm_batch_pipeline_runs_total{command=\"run\",status=\"completed\",service_run_key!=\"\"}, service_run_key)",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 2,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "20260415T042333Z_bfef09a1ec30",
+          "value": "20260415T042333Z_bfef09a1ec30"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus-bee"
+        },
+        "definition": "query_result(topk(1, max by(service_run_key) (max_over_time(timestamp(llm_batch_pipeline_runs_total{command=\"run\",status=\"completed\",service_run_key!=\"\"})[30d:]))))",
+        "hide": 2,
+        "includeAll": false,
+        "label": "Latest Run",
+        "multi": false,
+        "name": "latest_run",
+        "options": [],
+        "query": "query_result(topk(1, max by(service_run_key) (max_over_time(timestamp(llm_batch_pipeline_runs_total{command=\"run\",status=\"completed\",service_run_key!=\"\"})[30d:]))))",
+        "refresh": 2,
+        "regex": "/service_run_key=\"([^\"]+)\"/",
+        "skipUrlSync": true,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "20260415T042333Z_bfef09a1ec30",
+            "20260414T095352Z_8b3bcad7d086",
+            "20260414T092159Z_357ee26104a7"
+          ],
+          "value": [
+            "20260415T042333Z_bfef09a1ec30",
+            "20260414T095352Z_8b3bcad7d086",
+            "20260414T092159Z_357ee26104a7"
+          ]
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus-bee"
+        },
+        "definition": "query_result(topk(3, max by(service_run_key) (max_over_time(timestamp(llm_batch_pipeline_runs_total{command=\"run\",status=\"completed\",service_run_key!=\"\"})[30d:]))))",
+        "hide": 2,
+        "includeAll": false,
+        "label": "Comparison Runs",
+        "multi": true,
+        "name": "comparison_runs",
+        "options": [],
+        "query": "query_result(topk(3, max by(service_run_key) (max_over_time(timestamp(llm_batch_pipeline_runs_total{command=\"run\",status=\"completed\",service_run_key!=\"\"})[30d:]))))",
+        "refresh": 2,
+        "regex": "/service_run_key=\"([^\"]+)\"/",
+        "skipUrlSync": true,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "20260414T095352Z_8b3bcad7d086",
+          "value": "20260414T095352Z_8b3bcad7d086"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus-bee"
+        },
+        "definition": "query_result((topk(2, max by(service_run_key) (max_over_time(timestamp(llm_batch_pipeline_runs_total{command=\"run\",status=\"completed\",service_run_key!=\"\"})[30d:]))) unless topk(1, max by(service_run_key) (max_over_time(timestamp(llm_batch_pipeline_runs_total{command=\"run\",status=\"completed\",service_run_key!=\"\"})[30d:]))))",
+        "hide": 2,
+        "includeAll": false,
+        "label": "Previous Run 1",
+        "multi": false,
+        "name": "prev_run_1",
+        "options": [],
+        "query": "query_result((topk(2, max by(service_run_key) (max_over_time(timestamp(llm_batch_pipeline_runs_total{command=\"run\",status=\"completed\",service_run_key!=\"\"})[30d:]))) unless topk(1, max by(service_run_key) (max_over_time(timestamp(llm_batch_pipeline_runs_total{command=\"run\",status=\"completed\",service_run_key!=\"\"})[30d:]))))",
+        "refresh": 2,
+        "regex": "/service_run_key=\"([^\"]+)\"/",
+        "skipUrlSync": true,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "20260414T092159Z_357ee26104a7",
+          "value": "20260414T092159Z_357ee26104a7"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus-bee"
+        },
+        "definition": "query_result((topk(3, max by(service_run_key) (max_over_time(timestamp(llm_batch_pipeline_runs_total{command=\"run\",status=\"completed\",service_run_key!=\"\"})[30d:]))) unless topk(2, max by(service_run_key) (max_over_time(timestamp(llm_batch_pipeline_runs_total{command=\"run\",status=\"completed\",service_run_key!=\"\"})[30d:]))))",
+        "hide": 2,
+        "includeAll": false,
+        "label": "Previous Run 2",
+        "multi": false,
+        "name": "prev_run_2",
+        "options": [],
+        "query": "query_result((topk(3, max by(service_run_key) (max_over_time(timestamp(llm_batch_pipeline_runs_total{command=\"run\",status=\"completed\",service_run_key!=\"\"})[30d:]))) unless topk(2, max by(service_run_key) (max_over_time(timestamp(llm_batch_pipeline_runs_total{command=\"run\",status=\"completed\",service_run_key!=\"\"})[30d:]))))",
+        "refresh": 2,
+        "regex": "/service_run_key=\"([^\"]+)\"/",
+        "skipUrlSync": true,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "LLM Batch Pipeline Run Comparison",
+  "uid": "llm-batch-pipeline-run-comparison",
+  "version": 5,
+  "weekStart": ""
+}

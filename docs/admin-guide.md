@@ -8,6 +8,11 @@ Operations and deployment guide for running `llm-batch-pipeline` in production.
 - `uv` package manager
 - For OpenAI backend: `OPENAI_API_KEY` environment variable
 - For Ollama backend: One or more Ollama servers with models pulled
+- For vLLM backend: One or more `vllm serve` instances reachable over HTTP
+  (optionally token-protected via `--api-key` / `VLLM_API_KEY`).
+  See [`docs/running-vllm.md`](running-vllm.md) and the
+  [benchmark runbook](benchmark-run.md) for sequential Ollama vs. vLLM
+  comparisons.
 
 ## Installation
 
@@ -150,15 +155,22 @@ Grafana test instance:
 - Comparison dashboard URL: `http://grafana-test.intelmq.org:3000/d/llm-batch-pipeline-run-comparison/llm-batch-pipeline-run-comparison`
 - Drilldown dashboard imported: `LLM Batch Pipeline Run Drilldown`
 - Drilldown dashboard URL: `http://grafana-test.intelmq.org:3000/d/llm-batch-pipeline-run-drilldown/llm-batch-pipeline-run-drilldown`
+- Backend comparison dashboard imported: `LLM Batch Pipeline Backend Comparison`
+- Backend comparison dashboard URL: `http://grafana-test.intelmq.org:3000/d/llm-batch-pipeline-backend-comparison/llm-batch-pipeline-backend-comparison`
+- 3-way backend comparison dashboard imported: `LLM Batch Pipeline Backend Comparison 3-Way`
+- 3-way backend comparison dashboard URL: `http://grafana-test.intelmq.org:3000/d/llm-batch-pipeline-backend-3way/llm-batch-pipeline-backend-comparison-3-way`
 - Dashboard definition in repo: `docs/llm-batch-pipeline-dashboard.json`
 - Comparison dashboard definition in repo: `docs/llm-batch-pipeline-run-comparison-dashboard.json`
 - Drilldown dashboard definition in repo: `docs/llm-batch-pipeline-run-drilldown-dashboard.json`
+- Backend comparison dashboard definition in repo: `docs/llm-batch-pipeline-backend-comparison-dashboard.json`
+- 3-way backend comparison dashboard definition in repo: `docs/llm-batch-pipeline-backend-comparison-3way-dashboard.json`
 
 Dashboard notes:
 - The detailed per-stage and per-row panels require pipeline runs with `--log-level INFO`.
-- The dashboard has a `Run Key` textbox for the selected-run panels.
+- The dashboards now have a visible `backend` selector (`ollama` / `vllm` / `llamacpp`).
+- The `Run Key` selector is backend-aware and only lists completed runs for the selected backend.
 - The default `Run Key` is seeded to the latest verified run when the dashboard JSON is imported.
-- To inspect an older run, copy its `service_run_key` from the `Recent Completed Runs` panel and paste it into the `Run Key` textbox.
+- The run comparison dashboard uses backend-aware hidden variables for `latest_run`, `prev_run_1`, and `prev_run_2`.
 
 Relevant upstream docs:
 - OpenTelemetry Collector: <https://opentelemetry.io/docs/collector/>

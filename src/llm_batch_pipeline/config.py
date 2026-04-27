@@ -20,6 +20,10 @@ from typing import Any
 
 OPENAI_BATCH_ENDPOINT: str = "/v1/responses"
 OLLAMA_CHAT_ENDPOINT: str = "/api/chat"
+VLLM_RESPONSES_ENDPOINT: str = "/v1/responses"
+VLLM_CHAT_ENDPOINT: str = "/v1/chat/completions"
+LLAMACPP_RESPONSES_ENDPOINT: str = "/v1/responses"
+LLAMACPP_CHAT_ENDPOINT: str = "/v1/chat/completions"
 
 DEFAULT_BATCH_MAX_REQUESTS: int = 50_000
 DEFAULT_BATCH_MAX_BYTES: int = 190 * 1024 * 1024  # 190 MiB
@@ -58,7 +62,7 @@ class BatchConfig:
     max_bytes_per_shard: int = DEFAULT_BATCH_MAX_BYTES
 
     # Backend
-    backend: str = "openai"  # "openai" | "ollama"
+    backend: str = "openai"  # "openai" | "ollama" | "vllm" | "llamacpp"
     base_urls: list[str] = field(default_factory=lambda: ["http://localhost:11434"])
     num_shards: int | None = None
     num_parallel_jobs: int = DEFAULT_OLLAMA_NUM_PARALLEL_JOBS
@@ -67,6 +71,9 @@ class BatchConfig:
     completion_window: str = "24h"
     insecure: bool = False
     no_wait: bool = False
+    api_key: str | None = None  # Bearer token for vLLM / llama.cpp (or other secured backends)
+    vllm_endpoint: str = "responses"  # "responses" | "chat"
+    llamacpp_endpoint: str = "chat"  # "responses" | "chat"
 
     # Prompt override (submit-time)
     prompt_override: str | None = None

@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": null,
+  "id": 2935284951142400,
   "links": [],
   "panels": [
     {
@@ -332,7 +332,7 @@
             "uid": "loki-bee"
           },
           "editorMode": "code",
-          "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.backends.ollama\" | step=\"submit\" | status=\"row_summary\" | unwrap rows_success [$__range])",
+          "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | backend=\"$backend\" | step=\"submit\" | status=\"row_summary\" | unwrap rows_success [$__range])",
           "queryType": "instant",
           "refId": "A"
         }
@@ -383,7 +383,7 @@
             "uid": "loki-bee"
           },
           "editorMode": "code",
-          "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.backends.ollama\" | step=\"submit\" | status=\"row_summary\" | unwrap rows_failed [$__range])",
+          "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | backend=\"$backend\" | step=\"submit\" | status=\"row_summary\" | unwrap rows_failed [$__range])",
           "queryType": "instant",
           "refId": "A"
         }
@@ -434,7 +434,7 @@
             "uid": "loki-bee"
           },
           "editorMode": "code",
-          "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.backends.ollama\" | step=\"submit\" | status=\"row_summary\" | unwrap rows_total [$__range])",
+          "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | backend=\"$backend\" | step=\"submit\" | status=\"row_summary\" | unwrap rows_total [$__range])",
           "queryType": "instant",
           "refId": "A"
         }
@@ -485,7 +485,7 @@
             "uid": "loki-bee"
           },
           "editorMode": "code",
-          "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.backends.ollama\" | step=\"submit\" | status=\"row_summary\" | unwrap row_duration_avg_ms [$__range])",
+          "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | backend=\"$backend\" | step=\"submit\" | status=\"row_summary\" | unwrap row_duration_avg_ms [$__range])",
           "queryType": "instant",
           "refId": "A"
         }
@@ -536,7 +536,7 @@
             "uid": "loki-bee"
           },
           "editorMode": "code",
-          "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.backends.ollama\" | step=\"submit\" | status=\"row_summary\" | unwrap row_duration_p50_ms [$__range])",
+          "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | backend=\"$backend\" | step=\"submit\" | status=\"row_summary\" | unwrap row_duration_p50_ms [$__range])",
           "queryType": "instant",
           "refId": "A"
         }
@@ -587,7 +587,7 @@
             "uid": "loki-bee"
           },
           "editorMode": "code",
-          "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.backends.ollama\" | step=\"submit\" | status=\"row_summary\" | unwrap row_duration_min_ms [$__range])",
+          "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | backend=\"$backend\" | step=\"submit\" | status=\"row_summary\" | unwrap row_duration_min_ms [$__range])",
           "queryType": "instant",
           "refId": "A"
         }
@@ -638,7 +638,7 @@
             "uid": "loki-bee"
           },
           "editorMode": "code",
-          "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.backends.ollama\" | step=\"submit\" | status=\"row_summary\" | unwrap row_duration_max_ms [$__range])",
+          "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | backend=\"$backend\" | step=\"submit\" | status=\"row_summary\" | unwrap row_duration_max_ms [$__range])",
           "queryType": "instant",
           "refId": "A"
         }
@@ -927,9 +927,9 @@
               "Time": true
             },
             "indexByName": {
-              "step": 0,
+              "Value": 2,
               "status": 1,
-              "Value": 2
+              "step": 0
             },
             "renameByName": {
               "Value": "count"
@@ -998,21 +998,53 @@
       {
         "current": {
           "selected": true,
-          "text": "20260415T042333Z_bfef09a1ec30",
-          "value": "20260415T042333Z_bfef09a1ec30"
+          "text": "ollama",
+          "value": "ollama"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Backend",
+        "multi": false,
+        "name": "backend",
+        "options": [
+          {
+            "selected": true,
+            "text": "ollama",
+            "value": "ollama"
+          },
+          {
+            "selected": false,
+            "text": "vllm",
+            "value": "vllm"
+          },
+          {
+            "selected": false,
+            "text": "llamacpp",
+            "value": "llamacpp"
+          }
+        ],
+        "query": "ollama,vllm,llamacpp",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "20260423T024833Z_8f416a1ced51",
+          "value": "20260423T024833Z_8f416a1ced51"
         },
         "datasource": {
           "type": "prometheus",
           "uid": "prometheus-bee"
         },
-        "definition": "label_values(llm_batch_pipeline_runs_total{command=\"run\",status=\"completed\"}, service_run_key)",
+        "definition": "label_values(llm_batch_pipeline_runs_total{command=\"run\",status=\"completed\",backend=\"$backend\"}, service_run_key)",
         "hide": 0,
         "includeAll": false,
         "label": "Run Key",
         "multi": false,
         "name": "run_key",
         "options": [],
-        "query": "label_values(llm_batch_pipeline_runs_total{command=\"run\",status=\"completed\"}, service_run_key)",
+        "query": "label_values(llm_batch_pipeline_runs_total{command=\"run\",status=\"completed\",backend=\"$backend\"}, service_run_key)",
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
@@ -1029,6 +1061,6 @@
   "timezone": "browser",
   "title": "LLM Batch Pipeline Overview",
   "uid": "llm-batch-pipeline-overview",
-  "version": 8,
+  "version": 11,
   "weekStart": ""
 }

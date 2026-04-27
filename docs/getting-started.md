@@ -2,12 +2,13 @@
 
 This is the shortest end-to-end walkthrough for a new user who wants to see what `llm-batch-pipeline` does in practice.
 
-It covers two real workflows:
+It covers three real workflows:
 
 - OpenAI Batch API with `gpt-4o-mini`
 - A 3-way sharded Ollama setup at `http://nanu:11435`, `http://nanu:11436`, and `http://nanu:11437` (Note: "nanu" is my server name for the ollama server. Replace by your ollama server).
+- A native llama.cpp server on `nanu` at `http://nanu:18100`
 
-These instructions were tested against the live services on 2026-04-09.
+These instructions were tested against the live services on 2026-04-27, including llama.cpp on `nanu`.
 
 ## What You Will Do
 
@@ -136,7 +137,7 @@ Rendered 1 shard(s) to (...)/llm_batch_pipeliner/<openai-batch-dir>/job
 
 You can now look at the file. It is essentially a JSONL file suitable for submission to openai's Batch API:
 ```bash
-jq -C .  <openai-batch-dir>/job/batch.jsonl
+jq -C .  <openai-batch-dir>/job/batch-00001.jsonl
 ```
 It's interesting to see how the prompt as well as the rendered schema.py end up as a list of JSON structures for openai.
 
@@ -293,6 +294,76 @@ uv run llm-batch-pipeline evaluate \
 
 In the tested run, the Ollama batch also classified both sample emails correctly.
 
+## llama.cpp Walkthrough
+
+### 1. Create a batch directory
+
+```bash
+uv run llm-batch-pipeline init getting_started_llamacpp --plugin spam_detection --model qwen3.6:latest
+```
+
+This creates a directory like `batches/batch_003_getting_started_llamacpp`.
+Use that path in the commands below as `<llamacpp-batch-dir>`.
+
+### 2. Copy the built-in prompt and schema into the batch
+
+```bash
+cp src/llm_batch_pipeline/examples/spam_detection/prompt.txt <llamacpp-batch-dir>/prompt.txt
+cp src/llm_batch_pipeline/examples/spam_detection/schema.py <llamacpp-batch-dir>/schema.py
+```
+
+### 3. Add the same sample inputs and evaluation map
+
+Use the same `ham__team_sync.eml`, `spam__million_prize.eml`, and
+`evaluation/category-map.json` blocks from the Ollama walkthrough above.
+
+### 4. Render the batch JSONL
+
+```bash
+uv run llm-batch-pipeline render --batch-dir <llamacpp-batch-dir> --plugin spam_detection
+```
+
+### 5. Start native llama.cpp
+
+```bash
+ssh nanu 'sudo systemctl stop ollama'
+ssh nanu 'LLAMACPP_VISIBLE_DEVICES=0,1,2 LLAMACPP_DEVICE_LIST=CUDA0,CUDA1,CUDA2 LLAMACPP_PORT=18100 LLAMACPP_SPLIT_MODE=layer LLAMACPP_TENSOR_SPLIT=1,1,1 LLAMACPP_N_GPU_LAYERS=all LLAMACPP_CTX_SIZE=32768 LLAMACPP_ENDPOINT=chat /home/aaron/nanu-scripts/llamacpp-up.sh /data/models/llama.cpp/Qwen_Qwen3.6-35B-A3B-Q4_K_M.gguf qwen3.6:latest'
+```
+
+This guide uses the fresh Hugging Face GGUF under `/data/models/llama.cpp/`.
+The server should answer `http://nanu:18100/v1/models`.
+
+### 6. Submit to llama.cpp
+
+```bash
+uv run llm-batch-pipeline submit --batch-dir <llamacpp-batch-dir> --backend llamacpp --llamacpp-endpoint chat --base-url http://nanu:18100 --num-shards 1 --num-parallel-jobs 1 --model qwen3.6:latest --request-timeout 1200
+```
+
+### 7. Validate the output
+
+```bash
+uv run llm-batch-pipeline validate --batch-dir <llamacpp-batch-dir>
+```
+
+### 8. Evaluate the predictions
+
+```bash
+uv run llm-batch-pipeline evaluate \
+  --batch-dir <llamacpp-batch-dir> \
+  --label-field classification \
+  --confidence-field confidence \
+  --positive-class spam
+```
+
+### 9. Stop llama.cpp and restore Ollama
+
+```bash
+ssh nanu '/home/aaron/nanu-scripts/llamacpp-down.sh'
+ssh nanu 'sudo systemctl start ollama'
+```
+
+In the tested run, the llama.cpp batch also classified both sample emails correctly.
+
 ## Output You Should Expect
 
 After `render`:
@@ -311,6 +382,24 @@ After `validate`:
 After `evaluate`:
 
 - metrics printed to stdout
+
+## Other backends
+
+The pipeline supports three submission backends, all sharing the same CLI flags:
+
+- `--backend openai` (default) — OpenAI Batch API
+- `--backend ollama` — local Ollama servers; `--base-url` repeatable for sharding
+- `--backend llamacpp` — local native `llama-server`; use `--llamacpp-endpoint chat` and `--base-url http://HOST:18100`
+- `--backend vllm` — local `vllm serve` instances; `--base-url` repeatable for
+  sharding; optional `--api-key` / `VLLM_API_KEY`; optional
+  `--vllm-endpoint chat` to use `/v1/chat/completions` instead of the default
+  `/v1/responses`
+
+For a vLLM-specific walkthrough including 3-way sharding, see
+[`docs/running-vllm.md`](running-vllm.md). For sequential
+Ollama-vs-vLLM benchmarking on the same hardware, see
+[`docs/benchmark-run.md`](benchmark-run.md).
+For a native llama.cpp walkthrough, see [`docs/running-llamacpp.md`](running-llamacpp.md).
 
 ## When To Use `run` Instead
 

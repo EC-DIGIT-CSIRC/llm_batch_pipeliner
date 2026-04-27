@@ -15,7 +15,9 @@ from rich.console import Console
 
 from llm_batch_pipeline.backends.base import SubmissionResult
 from llm_batch_pipeline.backends.ollama_backend import OllamaBackend
+from llm_batch_pipeline.backends.llamacpp_backend import LlamaCppBackend
 from llm_batch_pipeline.backends.openai_backend import OpenAIBackend
+from llm_batch_pipeline.backends.vllm_backend import VllmBackend
 from llm_batch_pipeline.config import BatchConfig
 from llm_batch_pipeline.evaluation import (
     EvalReport,
@@ -201,6 +203,10 @@ def stage_submit(ctx: PipelineContext) -> StageResult:
         backend = OpenAIBackend()
     elif backend_name == "ollama":
         backend = OllamaBackend()
+    elif backend_name == "vllm":
+        backend = VllmBackend().configure(endpoint=ctx.config.vllm_endpoint)
+    elif backend_name == "llamacpp":
+        backend = LlamaCppBackend().configure(endpoint=ctx.config.llamacpp_endpoint)
     else:
         return StageResult(name="submit", status="failed", error=f"Unknown backend: {backend_name}")
 
@@ -255,9 +261,24 @@ def stage_validate(ctx: PipelineContext) -> StageResult:
         for row in result.invalid_rows:
             all_invalid.append({"filename": row.custom_id, "error": row.error_message})
 
-        ctx.metrics.record_validation(ctx.config.batch_name, "valid", result.valid_count)
-        ctx.metrics.record_validation(ctx.config.batch_name, "invalid", result.invalid_count)
-        ctx.metrics.record_validation(ctx.config.batch_name, "skipped", result.skipped_count)
+        ctx.metrics.record_validation(
+            ctx.config.batch_name,
+            "valid",
+            result.valid_count,
+            backend=ctx.config.backend,
+        )
+        ctx.metrics.record_validation(
+            ctx.config.batch_name,
+            "invalid",
+            result.invalid_count,
+            backend=ctx.config.backend,
+        )
+        ctx.metrics.record_validation(
+            ctx.config.batch_name,
+            "skipped",
+            result.skipped_count,
+            backend=ctx.config.backend,
+        )
 
     ctx.artifacts["validated_rows"] = all_valid
     ctx.artifacts["validation_errors"] = all_invalid

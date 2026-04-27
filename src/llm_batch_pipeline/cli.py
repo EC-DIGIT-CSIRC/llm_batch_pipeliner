@@ -110,7 +110,7 @@ def _add_backend_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--backend",
         dest="backend",
-        choices=["openai", "ollama"],
+        choices=["openai", "ollama", "vllm", "llamacpp"],
         default="openai",
         help="LLM backend (default: openai)",
     )
@@ -118,15 +118,35 @@ def _add_backend_args(parser: argparse.ArgumentParser) -> None:
         "--base-url",
         dest="base_urls",
         action="append",
-        help="Ollama base URL (can repeat for multi-server sharding)",
+        help="Backend base URL (can repeat for multi-server sharding; applies to ollama, vllm, and llamacpp)",
     )
-    parser.add_argument("--num-shards", dest="num_shards", type=int, help="Number of Ollama shards")
+    parser.add_argument("--num-shards", dest="num_shards", type=int, help="Number of shards")
     parser.add_argument(
         "--num-parallel-jobs",
         dest="num_parallel_jobs",
         type=int,
         default=3,
-        help="Parallel jobs per Ollama shard (default: 3)",
+        help="Parallel jobs per shard (default: 3)",
+    )
+    parser.add_argument(
+        "--api-key",
+        dest="api_key",
+        default=None,
+        help="Bearer token for the LLM server (vllm/llamacpp). Falls back to $VLLM_API_KEY or $LLAMA_API_KEY.",
+    )
+    parser.add_argument(
+        "--vllm-endpoint",
+        dest="vllm_endpoint",
+        choices=["responses", "chat"],
+        default="responses",
+        help="vLLM API path: 'responses' (default) or 'chat'",
+    )
+    parser.add_argument(
+        "--llamacpp-endpoint",
+        dest="llamacpp_endpoint",
+        choices=["responses", "chat"],
+        default="chat",
+        help="llama.cpp API path: 'chat' (default) or 'responses'",
     )
     parser.add_argument(
         "--request-timeout",
@@ -308,6 +328,9 @@ def _apply_cli_overrides(config: BatchConfig, args: argparse.Namespace) -> None:
         "completion_window": "completion_window",
         "insecure": "insecure",
         "no_wait": "no_wait",
+        "api_key": "api_key",
+        "vllm_endpoint": "vllm_endpoint",
+        "llamacpp_endpoint": "llamacpp_endpoint",
         "prompt_override": "prompt_override",
         "prompt_override_file": "prompt_override_file",
         "ground_truth_csv": "ground_truth_csv",

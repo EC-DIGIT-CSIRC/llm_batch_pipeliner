@@ -151,13 +151,14 @@ class Pipeline:
             self._print_dry_run()
             return results
 
-        ctx.metrics.record_run("run", "started")
+        ctx.metrics.record_run("run", "started", backend=ctx.config.backend)
 
         log_event(
             logger,
             f"Pipeline '{self.name}' starting",
             step="pipeline",
             status="starting",
+            backend=ctx.config.backend,
             stages=len(self._stages),
             start_from=start_from or "(beginning)",
         )
@@ -186,6 +187,7 @@ class Pipeline:
                     stage=stage_def.name,
                     duration_ms=result.duration_ms,
                     status=result.status,
+                    backend=ctx.config.backend,
                 )
 
                 if result.status == "failed" and not stage_def.optional:
@@ -194,6 +196,7 @@ class Pipeline:
                         f"Pipeline aborted at stage '{stage_def.name}'",
                         step="pipeline",
                         status="aborted",
+                        backend=ctx.config.backend,
                         failed_stage=stage_def.name,
                         error=result.error,
                         level=logging.ERROR,
@@ -204,13 +207,14 @@ class Pipeline:
 
         total_ms = (time.perf_counter_ns() - pipeline_start) / 1_000_000
         all_ok = all(r.status in ("completed", "skipped") for r in results)
-        ctx.metrics.record_run("run", "completed" if all_ok else "failed")
+        ctx.metrics.record_run("run", "completed" if all_ok else "failed", backend=ctx.config.backend)
 
         log_event(
             logger,
             f"Pipeline '{self.name}' finished",
             step="pipeline",
             status="completed" if all_ok else "partial",
+            backend=ctx.config.backend,
             duration_ms=total_ms,
             stages_completed=sum(1 for r in results if r.status == "completed"),
             stages_failed=sum(1 for r in results if r.status == "failed"),
@@ -238,6 +242,7 @@ class Pipeline:
                     f"Stage '{stage_def.name}' starting (attempt {attempt}/{attempts})",
                     step=stage_def.name,
                     status="starting",
+                    backend=ctx.config.backend,
                     attempt=attempt,
                 )
                 result = stage_def.fn(ctx)
@@ -249,6 +254,7 @@ class Pipeline:
                         f"Stage '{stage_def.name}' completed",
                         step=stage_def.name,
                         status="completed",
+                        backend=ctx.config.backend,
                         duration_ms=result.duration_ms,
                     )
                     return result
@@ -262,6 +268,7 @@ class Pipeline:
                     f"Stage '{stage_def.name}' raised: {last_error}",
                     step=stage_def.name,
                     status="error",
+                    backend=ctx.config.backend,
                     duration_ms=duration_ms,
                     attempt=attempt,
                     error=last_error,
@@ -274,6 +281,7 @@ class Pipeline:
                     f"Retrying stage '{stage_def.name}'",
                     step=stage_def.name,
                     status="retrying",
+                    backend=ctx.config.backend,
                     attempt=attempt + 1,
                 )
 

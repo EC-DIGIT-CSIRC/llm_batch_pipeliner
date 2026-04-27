@@ -3,7 +3,10 @@
     "list": [
       {
         "builtIn": 1,
-        "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
@@ -15,446 +18,2146 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": null,
-  "links": [],
+  "id": 1339936955629568,
+  "liveNow": false,
   "panels": [
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus-bee"},
-      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "red"}, {"color": "green", "value": 1}]}, "unit": "none"}, "overrides": []},
-      "gridPos": {"h": 4, "w": 4, "x": 0, "y": 0},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 0
+      },
       "id": 1,
-      "options": {"colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "value_and_name"},
-      "pluginVersion": "12.4.2",
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.0",
       "targets": [
-        {"datasource": {"type": "prometheus", "uid": "prometheus-bee"}, "editorMode": "code", "expr": "sum by (status) (last_over_time(llm_batch_pipeline_runs_total{command=\"run\",service_run_key=\"$run_key\"}[30d]))", "legendFormat": "{{status}}", "range": false, "refId": "A"}
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-bee"
+          },
+          "editorMode": "code",
+          "expr": "sum by (status) (last_over_time(llm_batch_pipeline_runs_total{command=\"run\",service_run_key=\"$run_key\"}[30d]))",
+          "legendFormat": "{{status}}",
+          "range": false,
+          "refId": "A"
+        }
       ],
       "title": "Run Status",
       "type": "stat"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus-bee"},
-      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "blue"}]}, "unit": "none"}, "overrides": []},
-      "gridPos": {"h": 4, "w": 4, "x": 4, "y": 0},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 0
+      },
       "id": 2,
-      "options": {"colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "name"},
-      "pluginVersion": "12.4.2",
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "name",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.0",
       "targets": [
-        {"datasource": {"type": "prometheus", "uid": "prometheus-bee"}, "editorMode": "code", "expr": "sum by (model) (last_over_time(llm_batch_pipeline_requests_total{service_run_key=\"$run_key\"}[30d]))", "legendFormat": "{{model}}", "range": false, "refId": "A"}
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-bee"
+          },
+          "editorMode": "code",
+          "expr": "sum by (model) (last_over_time(llm_batch_pipeline_requests_total{service_run_key=\"$run_key\",status=\"success\"}[30d])) or (absent(sum by (model) (last_over_time(llm_batch_pipeline_requests_total{service_run_key=\"$run_key\",status=\"success\"}[30d]))) * on() sum by (model) (last_over_time(llm_batch_pipeline_requests_total{backend=\"$backend\",status=\"success\"}[30d])))",
+          "legendFormat": "{{model}}",
+          "range": false,
+          "refId": "A"
+        }
       ],
       "title": "Model",
       "type": "stat"
     },
     {
-      "datasource": {"type": "loki", "uid": "loki-bee"},
-      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "blue"}]}, "unit": "ms"}, "overrides": []},
-      "gridPos": {"h": 4, "w": 4, "x": 8, "y": 0},
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "ms"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 0
+      },
       "id": 3,
-      "options": {"colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "value"},
-      "pluginVersion": "12.4.2",
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.0",
       "targets": [
-        {"datasource": {"type": "loki", "uid": "loki-bee"}, "editorMode": "code", "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.pipeline\" | step=\"pipeline\" | status=\"completed\" | unwrap duration_ms [30d])", "queryType": "instant", "refId": "A"}
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-bee"
+          },
+          "editorMode": "code",
+          "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.pipeline\" | step=\"pipeline\" | status=\"completed\" | unwrap duration_ms [30d])",
+          "queryType": "instant",
+          "refId": "A"
+        }
       ],
       "title": "Total Pipeline Duration",
       "type": "stat"
     },
     {
-      "datasource": {"type": "loki", "uid": "loki-bee"},
-      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "purple"}]}, "unit": "none"}, "overrides": []},
-      "gridPos": {"h": 4, "w": 4, "x": 12, "y": 0},
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "purple",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 0
+      },
       "id": 4,
-      "options": {"colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "value"},
-      "pluginVersion": "12.4.2",
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.0",
       "targets": [
-        {"datasource": {"type": "loki", "uid": "loki-bee"}, "editorMode": "code", "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.stages\" | step=\"discover\" | status=\"ok\" | unwrap count [30d])", "queryType": "instant", "refId": "A"}
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-bee"
+          },
+          "editorMode": "code",
+          "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.stages\" | step=\"discover\" | status=\"ok\" | unwrap count [30d])",
+          "queryType": "instant",
+          "refId": "A"
+        }
       ],
       "title": "Files Discovered",
       "type": "stat"
     },
     {
-      "datasource": {"type": "loki", "uid": "loki-bee"},
-      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "red"}, {"color": "yellow", "value": 0.5}, {"color": "green", "value": 0.8}]}, "unit": "percentunit", "min": 0, "max": 1}, "overrides": []},
-      "gridPos": {"h": 4, "w": 4, "x": 16, "y": 0},
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "max": 1,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 0.5
+              },
+              {
+                "color": "green",
+                "value": 0.8
+              }
+            ]
+          },
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 0
+      },
       "id": 5,
-      "options": {"colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "value"},
-      "pluginVersion": "12.4.2",
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.0",
       "targets": [
-        {"datasource": {"type": "loki", "uid": "loki-bee"}, "editorMode": "code", "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.evaluation\" | step=\"evaluate\" | unwrap accuracy [30d])", "queryType": "instant", "refId": "A"}
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-bee"
+          },
+          "editorMode": "code",
+          "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.evaluation\" | step=\"evaluate\" | unwrap accuracy [30d])",
+          "queryType": "instant",
+          "refId": "A"
+        }
       ],
       "title": "Accuracy",
       "type": "stat"
     },
     {
-      "datasource": {"type": "loki", "uid": "loki-bee"},
-      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "red"}, {"color": "yellow", "value": 0.5}, {"color": "green", "value": 0.8}]}, "unit": "percentunit", "min": 0, "max": 1}, "overrides": []},
-      "gridPos": {"h": 4, "w": 4, "x": 20, "y": 0},
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "max": 1,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 0.5
+              },
+              {
+                "color": "green",
+                "value": 0.8
+              }
+            ]
+          },
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 0
+      },
       "id": 6,
-      "options": {"colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "value"},
-      "pluginVersion": "12.4.2",
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.0",
       "targets": [
-        {"datasource": {"type": "loki", "uid": "loki-bee"}, "editorMode": "code", "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.evaluation\" | step=\"evaluate\" | unwrap macro_f1 [30d])", "queryType": "instant", "refId": "A"}
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-bee"
+          },
+          "editorMode": "code",
+          "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.evaluation\" | step=\"evaluate\" | unwrap macro_f1 [30d])",
+          "queryType": "instant",
+          "refId": "A"
+        }
       ],
       "title": "Macro F1",
       "type": "stat"
     },
     {
-      "datasource": {"type": "loki", "uid": "loki-bee"},
-      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "mappings": [], "unit": "ms"}, "overrides": []},
-      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 4},
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "ms"
+        }
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 4
+      },
       "id": 7,
-      "options": {"displayMode": "gradient", "legend": {"calcs": [], "displayMode": "list", "placement": "right", "showLegend": false}, "orientation": "horizontal", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "showUnfilled": true, "text": {}, "valueMode": "color"},
-      "pluginVersion": "12.4.2",
+      "options": {
+        "displayMode": "lcd",
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "maxVizHeight": 300,
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "namePlacement": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [],
+          "fields": "",
+          "values": true
+        },
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "color"
+      },
+      "pluginVersion": "13.0.0",
       "targets": [
-        {"datasource": {"type": "loki", "uid": "loki-bee"}, "editorMode": "code", "expr": "avg by (step) (last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.pipeline\" | step!=\"pipeline\" | status=\"completed\" | unwrap duration_ms [30d]))", "legendFormat": "{{step}}", "queryType": "instant", "refId": "A"}
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-bee"
+          },
+          "direction": "backward",
+          "editorMode": "code",
+          "expr": "avg by (step) (last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.pipeline\" | step!=\"pipeline\" | status=\"completed\" | unwrap duration_ms [30d]))",
+          "legendFormat": "{{step}}",
+          "queryType": "instant",
+          "refId": "A"
+        }
       ],
       "title": "Stage Duration Breakdown",
       "type": "bargauge"
     },
     {
-      "datasource": {"type": "loki", "uid": "loki-bee"},
-      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"align": "auto", "cellOptions": {"type": "auto"}, "inspect": false}, "mappings": []}, "overrides": []},
-      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 4},
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 4
+      },
       "id": 8,
-      "options": {"cellHeight": "sm", "footer": {"countRows": false, "fields": "", "reducer": ["sum"], "show": false}, "showHeader": true},
-      "pluginVersion": "12.4.2",
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true
+      },
+      "pluginVersion": "13.0.0",
       "targets": [
-        {"datasource": {"type": "loki", "uid": "loki-bee"}, "editorMode": "code", "expr": "{service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.pipeline\" | step!=\"pipeline\" | status=\"completed\" | line_format \"\"", "queryType": "range", "refId": "A"}
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-bee"
+          },
+          "editorMode": "code",
+          "expr": "{service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.pipeline\" | step!=\"pipeline\" | status=\"completed\" | line_format \"\"",
+          "queryType": "range",
+          "refId": "A"
+        }
       ],
       "title": "Stage Events",
       "transformations": [
-        {"id": "extractFields", "options": {"format": "json", "source": "labels"}},
-        {"id": "organize", "options": {"excludeByName": {"id": true, "labels": true, "Line": true, "tsNs": true, "detected_level": true, "service_name": true, "service_instance_id": true, "service_run_key": true, "service_version": true, "logger": true, "log_level": true, "instance": true, "job": true, "attempt": true, "logger_name": true, "exporter": true, "schema_url": true, "observed_timestamp": true, "flags": true}, "indexByName": {"Time": 0, "step": 1, "status": 2, "duration_ms": 3}}}
+        {
+          "id": "extractFields",
+          "options": {
+            "format": "json",
+            "source": "labels"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Line": true,
+              "attempt": true,
+              "detected_level": true,
+              "exporter": true,
+              "flags": true,
+              "id": true,
+              "instance": true,
+              "job": true,
+              "labels": true,
+              "log_level": true,
+              "logger": true,
+              "logger_name": true,
+              "observed_timestamp": true,
+              "schema_url": true,
+              "service_instance_id": true,
+              "service_name": true,
+              "service_run_key": true,
+              "service_version": true,
+              "tsNs": true
+            },
+            "indexByName": {
+              "Time": 0,
+              "duration_ms": 3,
+              "status": 2,
+              "step": 1
+            }
+          }
+        }
       ],
       "type": "table"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus-bee"},
-      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "blue"}]}, "unit": "none"}, "overrides": []},
-      "gridPos": {"h": 4, "w": 3, "x": 0, "y": 13},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 0,
+        "y": 13
+      },
       "id": 9,
-      "options": {"colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "value"},
-      "pluginVersion": "12.4.2",
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.0",
       "targets": [
-        {"datasource": {"type": "prometheus", "uid": "prometheus-bee"}, "editorMode": "code", "expr": "sum(last_over_time(llm_batch_pipeline_requests_total{service_run_key=\"$run_key\"}[30d]))", "range": false, "refId": "A"}
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-bee"
+          },
+          "editorMode": "code",
+          "expr": "sum(last_over_time(llm_batch_pipeline_requests_total{service_run_key=\"$run_key\"}[30d]))",
+          "range": false,
+          "refId": "A"
+        }
       ],
       "title": "Requests Total",
       "type": "stat"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus-bee"},
-      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}]}, "unit": "none"}, "overrides": []},
-      "gridPos": {"h": 4, "w": 3, "x": 3, "y": 13},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 3,
+        "y": 13
+      },
       "id": 10,
-      "options": {"colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "value"},
-      "pluginVersion": "12.4.2",
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.0",
       "targets": [
-        {"datasource": {"type": "prometheus", "uid": "prometheus-bee"}, "editorMode": "code", "expr": "sum(last_over_time(llm_batch_pipeline_requests_total{service_run_key=\"$run_key\",status=\"success\"}[30d]))", "range": false, "refId": "A"}
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-bee"
+          },
+          "editorMode": "code",
+          "expr": "sum(last_over_time(llm_batch_pipeline_requests_total{service_run_key=\"$run_key\",status=\"success\"}[30d]))",
+          "range": false,
+          "refId": "A"
+        }
       ],
       "title": "Requests Success",
       "type": "stat"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus-bee"},
-      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "none"}, "overrides": []},
-      "gridPos": {"h": 4, "w": 3, "x": 6, "y": 13},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 6,
+        "y": 13
+      },
       "id": 11,
-      "options": {"colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "value"},
-      "pluginVersion": "12.4.2",
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.0",
       "targets": [
-        {"datasource": {"type": "prometheus", "uid": "prometheus-bee"}, "editorMode": "code", "expr": "sum(last_over_time(llm_batch_pipeline_requests_total{service_run_key=\"$run_key\",status=\"failure\"}[30d])) or vector(0)", "range": false, "refId": "A"}
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-bee"
+          },
+          "editorMode": "code",
+          "expr": "sum(last_over_time(llm_batch_pipeline_requests_total{service_run_key=\"$run_key\",status=\"failure\"}[30d])) or vector(0)",
+          "range": false,
+          "refId": "A"
+        }
       ],
       "title": "Requests Failed",
       "type": "stat"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus-bee"},
-      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "mappings": [], "unit": "s"}, "overrides": []},
-      "gridPos": {"h": 4, "w": 3, "x": 9, "y": 13},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 9,
+        "y": 13
+      },
       "id": 12,
-      "options": {"colorMode": "value", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "value"},
-      "pluginVersion": "12.4.2",
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.0",
       "targets": [
-        {"datasource": {"type": "prometheus", "uid": "prometheus-bee"}, "editorMode": "code", "expr": "sum(last_over_time(llm_batch_pipeline_request_duration_seconds_sum{service_run_key=\"$run_key\"}[30d])) / clamp_min(sum(last_over_time(llm_batch_pipeline_request_duration_seconds_count{service_run_key=\"$run_key\"}[30d])), 1)", "range": false, "refId": "A"}
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-bee"
+          },
+          "editorMode": "code",
+          "expr": "sum(last_over_time(llm_batch_pipeline_request_duration_seconds_sum{service_run_key=\"$run_key\"}[30d])) / clamp_min(sum(last_over_time(llm_batch_pipeline_request_duration_seconds_count{service_run_key=\"$run_key\"}[30d])), 1)",
+          "range": false,
+          "refId": "A"
+        }
       ],
       "title": "Avg Request Latency",
       "type": "stat"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus-bee"},
-      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "mappings": [], "unit": "s"}, "overrides": []},
-      "gridPos": {"h": 4, "w": 3, "x": 12, "y": 13},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 12,
+        "y": 13
+      },
       "id": 13,
-      "options": {"colorMode": "value", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "value"},
-      "pluginVersion": "12.4.2",
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.0",
       "targets": [
-        {"datasource": {"type": "prometheus", "uid": "prometheus-bee"}, "editorMode": "code", "expr": "histogram_quantile(0.5, sum by (le) (last_over_time(llm_batch_pipeline_request_duration_seconds_bucket{service_run_key=\"$run_key\"}[30d])))", "range": false, "refId": "A"}
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-bee"
+          },
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.5, sum by (le) (last_over_time(llm_batch_pipeline_request_duration_seconds_bucket{service_run_key=\"$run_key\"}[30d])))",
+          "range": false,
+          "refId": "A"
+        }
       ],
       "title": "P50 Latency",
       "type": "stat"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus-bee"},
-      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "mappings": [], "unit": "s"}, "overrides": []},
-      "gridPos": {"h": 4, "w": 3, "x": 15, "y": 13},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 15,
+        "y": 13
+      },
       "id": 14,
-      "options": {"colorMode": "value", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "value"},
-      "pluginVersion": "12.4.2",
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.0",
       "targets": [
-        {"datasource": {"type": "prometheus", "uid": "prometheus-bee"}, "editorMode": "code", "expr": "histogram_quantile(0.95, sum by (le) (last_over_time(llm_batch_pipeline_request_duration_seconds_bucket{service_run_key=\"$run_key\"}[30d])))", "range": false, "refId": "A"}
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-bee"
+          },
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum by (le) (last_over_time(llm_batch_pipeline_request_duration_seconds_bucket{service_run_key=\"$run_key\"}[30d])))",
+          "range": false,
+          "refId": "A"
+        }
       ],
       "title": "P95 Latency",
       "type": "stat"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus-bee"},
-      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "mappings": [], "unit": "s"}, "overrides": []},
-      "gridPos": {"h": 4, "w": 3, "x": 18, "y": 13},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 18,
+        "y": 13
+      },
       "id": 15,
-      "options": {"colorMode": "value", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "value"},
-      "pluginVersion": "12.4.2",
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.0",
       "targets": [
-        {"datasource": {"type": "prometheus", "uid": "prometheus-bee"}, "editorMode": "code", "expr": "histogram_quantile(0.99, sum by (le) (last_over_time(llm_batch_pipeline_request_duration_seconds_bucket{service_run_key=\"$run_key\"}[30d])))", "range": false, "refId": "A"}
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-bee"
+          },
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.99, sum by (le) (last_over_time(llm_batch_pipeline_request_duration_seconds_bucket{service_run_key=\"$run_key\"}[30d])))",
+          "range": false,
+          "refId": "A"
+        }
       ],
       "title": "P99 Latency",
       "type": "stat"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus-bee"},
-      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "mappings": [], "unit": "none"}, "overrides": []},
-      "gridPos": {"h": 4, "w": 3, "x": 21, "y": 13},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 21,
+        "y": 13
+      },
       "id": 16,
-      "options": {"colorMode": "value", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "value"},
-      "pluginVersion": "12.4.2",
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.0",
       "targets": [
-        {"datasource": {"type": "prometheus", "uid": "prometheus-bee"}, "editorMode": "code", "expr": "sum(last_over_time(llm_batch_pipeline_request_duration_seconds_count{service_run_key=\"$run_key\"}[30d]))", "range": false, "refId": "A"}
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-bee"
+          },
+          "editorMode": "code",
+          "expr": "sum(last_over_time(llm_batch_pipeline_request_duration_seconds_count{service_run_key=\"$run_key\"}[30d]))",
+          "range": false,
+          "refId": "A"
+        }
       ],
       "title": "Requests Observed",
       "type": "stat"
     },
     {
-      "datasource": {"type": "loki", "uid": "loki-bee"},
-      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "blue"}]}, "unit": "none"}, "overrides": []},
-      "gridPos": {"h": 4, "w": 3, "x": 0, "y": 17},
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 0,
+        "y": 17
+      },
       "id": 17,
-      "options": {"colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "value"},
-      "pluginVersion": "12.4.2",
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.0",
       "targets": [
-        {"datasource": {"type": "loki", "uid": "loki-bee"}, "editorMode": "code", "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | status=\"row_summary\" | unwrap rows_total [30d])", "queryType": "instant", "refId": "A"}
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-bee"
+          },
+          "editorMode": "code",
+          "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | status=\"row_summary\" | unwrap rows_total [30d])",
+          "queryType": "instant",
+          "refId": "A"
+        }
       ],
       "title": "Rows Total",
       "type": "stat"
     },
     {
-      "datasource": {"type": "loki", "uid": "loki-bee"},
-      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}]}, "unit": "none"}, "overrides": []},
-      "gridPos": {"h": 4, "w": 3, "x": 3, "y": 17},
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 3,
+        "y": 17
+      },
       "id": 18,
-      "options": {"colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "value"},
-      "pluginVersion": "12.4.2",
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.0",
       "targets": [
-        {"datasource": {"type": "loki", "uid": "loki-bee"}, "editorMode": "code", "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | status=\"row_summary\" | unwrap rows_success [30d])", "queryType": "instant", "refId": "A"}
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-bee"
+          },
+          "editorMode": "code",
+          "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | status=\"row_summary\" | unwrap rows_success [30d])",
+          "queryType": "instant",
+          "refId": "A"
+        }
       ],
       "title": "Rows Success",
       "type": "stat"
     },
     {
-      "datasource": {"type": "loki", "uid": "loki-bee"},
-      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "none"}, "overrides": []},
-      "gridPos": {"h": 4, "w": 3, "x": 6, "y": 17},
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 6,
+        "y": 17
+      },
       "id": 19,
-      "options": {"colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "value"},
-      "pluginVersion": "12.4.2",
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.0",
       "targets": [
-        {"datasource": {"type": "loki", "uid": "loki-bee"}, "editorMode": "code", "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | status=\"row_summary\" | unwrap rows_failed [30d])", "queryType": "instant", "refId": "A"}
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-bee"
+          },
+          "editorMode": "code",
+          "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | status=\"row_summary\" | unwrap rows_failed [30d])",
+          "queryType": "instant",
+          "refId": "A"
+        }
       ],
       "title": "Rows Failed",
       "type": "stat"
     },
     {
-      "datasource": {"type": "loki", "uid": "loki-bee"},
-      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "mappings": [], "unit": "ms"}, "overrides": []},
-      "gridPos": {"h": 4, "w": 3, "x": 9, "y": 17},
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "ms"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 9,
+        "y": 17
+      },
       "id": 20,
-      "options": {"colorMode": "value", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "value"},
-      "pluginVersion": "12.4.2",
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.0",
       "targets": [
-        {"datasource": {"type": "loki", "uid": "loki-bee"}, "editorMode": "code", "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | status=\"row_summary\" | unwrap row_duration_avg_ms [30d])", "queryType": "instant", "refId": "A"}
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-bee"
+          },
+          "editorMode": "code",
+          "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | status=\"row_summary\" | unwrap row_duration_avg_ms [30d])",
+          "queryType": "instant",
+          "refId": "A"
+        }
       ],
       "title": "Row Duration Avg",
       "type": "stat"
     },
     {
-      "datasource": {"type": "loki", "uid": "loki-bee"},
-      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "mappings": [], "unit": "ms"}, "overrides": []},
-      "gridPos": {"h": 4, "w": 3, "x": 12, "y": 17},
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "ms"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 12,
+        "y": 17
+      },
       "id": 21,
-      "options": {"colorMode": "value", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "value"},
-      "pluginVersion": "12.4.2",
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.0",
       "targets": [
-        {"datasource": {"type": "loki", "uid": "loki-bee"}, "editorMode": "code", "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | status=\"row_summary\" | unwrap row_duration_p50_ms [30d])", "queryType": "instant", "refId": "A"}
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-bee"
+          },
+          "editorMode": "code",
+          "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | status=\"row_summary\" | unwrap row_duration_p50_ms [30d])",
+          "queryType": "instant",
+          "refId": "A"
+        }
       ],
       "title": "Row Duration P50",
       "type": "stat"
     },
     {
-      "datasource": {"type": "loki", "uid": "loki-bee"},
-      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "mappings": [], "unit": "ms"}, "overrides": []},
-      "gridPos": {"h": 4, "w": 3, "x": 15, "y": 17},
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "ms"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 15,
+        "y": 17
+      },
       "id": 22,
-      "options": {"colorMode": "value", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "value"},
-      "pluginVersion": "12.4.2",
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.0",
       "targets": [
-        {"datasource": {"type": "loki", "uid": "loki-bee"}, "editorMode": "code", "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | status=\"row_summary\" | unwrap row_duration_min_ms [30d])", "queryType": "instant", "refId": "A"}
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-bee"
+          },
+          "editorMode": "code",
+          "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | status=\"row_summary\" | unwrap row_duration_min_ms [30d])",
+          "queryType": "instant",
+          "refId": "A"
+        }
       ],
       "title": "Row Duration Min",
       "type": "stat"
     },
     {
-      "datasource": {"type": "loki", "uid": "loki-bee"},
-      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "mappings": [], "unit": "ms"}, "overrides": []},
-      "gridPos": {"h": 4, "w": 3, "x": 18, "y": 17},
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "ms"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 18,
+        "y": 17
+      },
       "id": 23,
-      "options": {"colorMode": "value", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "value"},
-      "pluginVersion": "12.4.2",
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.0",
       "targets": [
-        {"datasource": {"type": "loki", "uid": "loki-bee"}, "editorMode": "code", "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | status=\"row_summary\" | unwrap row_duration_max_ms [30d])", "queryType": "instant", "refId": "A"}
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-bee"
+          },
+          "editorMode": "code",
+          "expr": "last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | status=\"row_summary\" | unwrap row_duration_max_ms [30d])",
+          "queryType": "instant",
+          "refId": "A"
+        }
       ],
       "title": "Row Duration Max",
       "type": "stat"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus-bee"},
-      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "blue"}]}, "unit": "none"}, "overrides": []},
-      "gridPos": {"h": 4, "w": 3, "x": 21, "y": 17},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 21,
+        "y": 17
+      },
       "id": 24,
-      "options": {"colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "value"},
-      "pluginVersion": "12.4.2",
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.0",
       "targets": [
-        {"datasource": {"type": "prometheus", "uid": "prometheus-bee"}, "editorMode": "code", "expr": "sum(last_over_time(llm_batch_pipeline_validation_total{service_run_key=\"$run_key\"}[30d]))", "range": false, "refId": "A"}
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-bee"
+          },
+          "editorMode": "code",
+          "expr": "sum(last_over_time(llm_batch_pipeline_validation_total{service_run_key=\"$run_key\"}[30d]))",
+          "range": false,
+          "refId": "A"
+        }
       ],
       "title": "Validated Rows",
       "type": "stat"
     },
     {
-      "datasource": {"type": "loki", "uid": "loki-bee"},
-      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "mappings": [], "unit": "ms"}, "overrides": []},
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 21},
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "ms"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 21
+      },
       "id": 25,
-      "options": {"displayMode": "gradient", "legend": {"calcs": [], "displayMode": "list", "placement": "right", "showLegend": false}, "orientation": "horizontal", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "showUnfilled": true, "text": {}, "valueMode": "color"},
-      "pluginVersion": "12.4.2",
+      "options": {
+        "displayMode": "gradient",
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": false
+        },
+        "maxVizHeight": 300,
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "namePlacement": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "sizing": "auto",
+        "text": {},
+        "valueMode": "color"
+      },
+      "pluginVersion": "13.0.0",
       "targets": [
-        {"datasource": {"type": "loki", "uid": "loki-bee"}, "editorMode": "code", "expr": "avg by (base_url) (last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.backends.ollama\" | status=\"warmup_ok\" | unwrap duration_ms [30d]))", "legendFormat": "{{base_url}}", "queryType": "instant", "refId": "A"}
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-bee"
+          },
+          "editorMode": "code",
+           "expr": "avg by (base_url) (last_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.backends.$backend\" | status=\"warmup_ok\" | unwrap duration_ms [30d]))",
+          "legendFormat": "{{base_url}}",
+          "queryType": "instant",
+          "refId": "A"
+        }
       ],
       "title": "Warmup Duration per Shard",
       "type": "bargauge"
     },
     {
-      "datasource": {"type": "loki", "uid": "loki-bee"},
-      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "mappings": [], "unit": "short"}, "overrides": []},
-      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 21},
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 21
+      },
       "id": 26,
-      "options": {"displayMode": "gradient", "legend": {"calcs": [], "displayMode": "list", "placement": "right", "showLegend": false}, "orientation": "horizontal", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "showUnfilled": true, "text": {}, "valueMode": "color"},
-      "pluginVersion": "12.4.2",
+      "options": {
+        "displayMode": "gradient",
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": false
+        },
+        "maxVizHeight": 300,
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "namePlacement": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "sizing": "auto",
+        "text": {},
+        "valueMode": "color"
+      },
+      "pluginVersion": "13.0.0",
       "targets": [
-        {"datasource": {"type": "loki", "uid": "loki-bee"}, "editorMode": "code", "expr": "sum by (url) (count_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.backends.ollama\" | status=\"retrying\" [30d]))", "legendFormat": "{{url}}", "queryType": "instant", "refId": "A"}
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-bee"
+          },
+          "editorMode": "code",
+           "expr": "sum by (url) (count_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.backends.$backend\" | status=\"retrying\" [30d]))",
+          "legendFormat": "{{url}}",
+          "queryType": "instant",
+          "refId": "A"
+        }
       ],
       "title": "Retries per Shard",
       "type": "bargauge"
     },
     {
-      "datasource": {"type": "loki", "uid": "loki-bee"},
-      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "mappings": [], "unit": "short"}, "overrides": []},
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 29},
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 29
+      },
       "id": 27,
-      "options": {"displayMode": "gradient", "legend": {"calcs": [], "displayMode": "list", "placement": "right", "showLegend": false}, "orientation": "horizontal", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "showUnfilled": true, "text": {}, "valueMode": "color"},
-      "pluginVersion": "12.4.2",
+      "options": {
+        "displayMode": "gradient",
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": false
+        },
+        "maxVizHeight": 300,
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "namePlacement": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "sizing": "auto",
+        "text": {},
+        "valueMode": "color"
+      },
+      "pluginVersion": "13.0.0",
       "targets": [
-        {"datasource": {"type": "loki", "uid": "loki-bee"}, "editorMode": "code", "expr": "sum by (reason) (count_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.filters\" | status=\"dropped\" [30d]))", "legendFormat": "{{reason}}", "queryType": "instant", "refId": "A"}
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-bee"
+          },
+          "editorMode": "code",
+          "expr": "sum by (reason) (count_over_time({service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.filters\" | status=\"dropped\" [30d]))",
+          "legendFormat": "{{reason}}",
+          "queryType": "instant",
+          "refId": "A"
+        }
       ],
       "title": "Files Dropped by Filter Reason",
       "type": "bargauge"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus-bee"},
-      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "mappings": [], "unit": "none"}, "overrides": []},
-      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 29},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-bee"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 29
+      },
       "id": 28,
-      "options": {"displayMode": "gradient", "legend": {"calcs": [], "displayMode": "list", "placement": "right", "showLegend": false}, "orientation": "horizontal", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "showUnfilled": true, "text": {}, "valueMode": "color"},
-      "pluginVersion": "12.4.2",
+      "options": {
+        "displayMode": "gradient",
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": false
+        },
+        "maxVizHeight": 300,
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "namePlacement": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "sizing": "auto",
+        "text": {},
+        "valueMode": "color"
+      },
+      "pluginVersion": "13.0.0",
       "targets": [
-        {"datasource": {"type": "prometheus", "uid": "prometheus-bee"}, "editorMode": "code", "expr": "sum by (status) (last_over_time(llm_batch_pipeline_validation_total{service_run_key=\"$run_key\"}[30d]))", "legendFormat": "{{status}}", "range": false, "refId": "A"}
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-bee"
+          },
+          "editorMode": "code",
+          "expr": "sum by (status) (last_over_time(llm_batch_pipeline_validation_total{service_run_key=\"$run_key\"}[30d]))",
+          "legendFormat": "{{status}}",
+          "range": false,
+          "refId": "A"
+        }
       ],
       "title": "Validation Outcomes",
       "type": "bargauge"
     },
     {
-      "datasource": {"type": "loki", "uid": "loki-bee"},
-      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}}, "overrides": []},
-      "gridPos": {"h": 10, "w": 12, "x": 0, "y": 37},
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-bee"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 37
+      },
       "id": 29,
-      "options": {"dedupStrategy": "none", "enableLogDetails": true, "prettifyLogMessage": false, "showCommonLabels": false, "showLabels": false, "showTime": true, "sortOrder": "Ascending", "wrapLogMessage": true},
-      "pluginVersion": "12.4.2",
+      "options": {
+        "dedupStrategy": "none",
+        "enableInfiniteScrolling": false,
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showControls": false,
+        "showFieldSelector": false,
+        "showLabels": false,
+        "showLevel": true,
+        "showTime": true,
+        "sortOrder": "Ascending",
+        "timestampResolution": "ms",
+        "unwrappedColumns": false,
+        "wrapLogMessage": true
+      },
+      "pluginVersion": "13.0.0",
       "targets": [
-        {"datasource": {"type": "loki", "uid": "loki-bee"}, "editorMode": "code", "expr": "{service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.backends.ollama\" | status=\"retrying\"", "queryType": "range", "refId": "A"}
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-bee"
+          },
+          "editorMode": "code",
+           "expr": "{service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | logger=\"llm_batch_pipeline.backends.$backend\" | status=\"retrying\"",
+          "queryType": "range",
+          "refId": "A"
+        }
       ],
       "title": "Retry Events",
       "type": "logs"
     },
     {
-      "datasource": {"type": "loki", "uid": "loki-bee"},
-      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}}, "overrides": []},
-      "gridPos": {"h": 10, "w": 12, "x": 12, "y": 37},
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-bee"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 37
+      },
       "id": 30,
-      "options": {"dedupStrategy": "none", "enableLogDetails": true, "prettifyLogMessage": false, "showCommonLabels": false, "showLabels": false, "showTime": true, "sortOrder": "Ascending", "wrapLogMessage": true},
-      "pluginVersion": "12.4.2",
+      "options": {
+        "dedupStrategy": "none",
+        "enableInfiniteScrolling": false,
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showControls": false,
+        "showFieldSelector": false,
+        "showLabels": false,
+        "showLevel": true,
+        "showTime": true,
+        "sortOrder": "Ascending",
+        "timestampResolution": "ms",
+        "unwrappedColumns": false,
+        "wrapLogMessage": true
+      },
+      "pluginVersion": "13.0.0",
       "targets": [
-        {"datasource": {"type": "loki", "uid": "loki-bee"}, "editorMode": "code", "expr": "{service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | level=\"error\"", "queryType": "range", "refId": "A"}
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-bee"
+          },
+          "editorMode": "code",
+          "expr": "{service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json | level=\"error\"",
+          "queryType": "range",
+          "refId": "A"
+        }
       ],
       "title": "Error Events",
       "type": "logs"
     },
     {
-      "datasource": {"type": "loki", "uid": "loki-bee"},
-      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}}, "overrides": []},
-      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 47},
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-bee"
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 47
+      },
       "id": 31,
-      "options": {"dedupStrategy": "none", "enableLogDetails": true, "prettifyLogMessage": false, "showCommonLabels": false, "showLabels": false, "showTime": true, "sortOrder": "Ascending", "wrapLogMessage": true},
-      "pluginVersion": "12.4.2",
+      "options": {
+        "dedupStrategy": "none",
+        "enableInfiniteScrolling": false,
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showControls": false,
+        "showFieldSelector": false,
+        "showLabels": false,
+        "showLevel": true,
+        "showTime": true,
+        "sortOrder": "Ascending",
+        "timestampResolution": "ms",
+        "unwrappedColumns": false,
+        "wrapLogMessage": true
+      },
+      "pluginVersion": "13.0.0",
       "targets": [
-        {"datasource": {"type": "loki", "uid": "loki-bee"}, "editorMode": "code", "expr": "{service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json", "queryType": "range", "refId": "A"}
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-bee"
+          },
+          "editorMode": "code",
+          "expr": "{service_name=\"llm-batch-pipeline\"} | service_run_key=\"$run_key\" | json",
+          "queryType": "range",
+          "refId": "A"
+        }
       ],
       "title": "All Pipeline Events",
       "type": "logs"
     }
   ],
+  "preload": false,
   "refresh": "30s",
-  "schemaVersion": 41,
-  "tags": ["llm-batch-pipeline", "drilldown", "prometheus", "loki", "ollama"],
+  "schemaVersion": 42,
+  "tags": [
+    "llm-batch-pipeline",
+    "drilldown",
+    "prometheus",
+    "loki",
+    "ollama",
+    "vllm",
+    "llamacpp"
+  ],
   "templating": {
     "list": [
       {
-        "current": {"selected": true, "text": "20260415T042333Z_bfef09a1ec30", "value": "20260415T042333Z_bfef09a1ec30"},
-        "datasource": {"type": "prometheus", "uid": "prometheus-bee"},
-        "definition": "label_values(llm_batch_pipeline_runs_total{command=\"run\",status=\"completed\",service_run_key!=\"\"}, service_run_key)",
+        "allowCustomValue": true,
+        "current": {
+          "text": "ollama",
+          "value": "ollama"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Backend",
+        "multi": false,
+        "name": "backend",
+        "options": [
+          {
+            "selected": true,
+            "text": "ollama",
+            "value": "ollama"
+          },
+          {
+            "selected": false,
+            "text": "vllm",
+            "value": "vllm"
+          },
+          {
+            "selected": false,
+            "text": "llamacpp",
+            "value": "llamacpp"
+          }
+        ],
+        "query": "ollama,vllm,llamacpp",
+        "skipUrlSync": false,
+        "type": "custom",
+        "valuesFormat": "csv"
+      },
+      {
+        "allowCustomValue": true,
+        "current": {
+          "text": "20260424T101457Z_ebcaa8e64297",
+          "value": "20260424T101457Z_ebcaa8e64297"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus-bee"
+        },
+        "definition": "label_values(llm_batch_pipeline_runs_total{command=\"run\",status=\"completed\",service_run_key!=\"\",backend=\"$backend\"}, service_run_key)",
         "hide": 0,
         "includeAll": false,
         "label": "Run Key",
         "multi": false,
         "name": "run_key",
         "options": [],
-        "query": "label_values(llm_batch_pipeline_runs_total{command=\"run\",status=\"completed\",service_run_key!=\"\"}, service_run_key)",
+        "query": "label_values(llm_batch_pipeline_runs_total{command=\"run\",status=\"completed\",service_run_key!=\"\",backend=\"$backend\"}, service_run_key)",
         "refresh": 2,
         "regex": "",
+        "regexApplyTo": "value",
         "skipUrlSync": false,
         "sort": 2,
         "type": "query"
       }
     ]
   },
-  "time": {"from": "now-30d", "to": "now"},
-  "timepicker": {},
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ]
+  },
   "timezone": "browser",
   "title": "LLM Batch Pipeline Run Drilldown",
   "uid": "llm-batch-pipeline-run-drilldown",
-  "version": 2,
-  "weekStart": ""
+  "version": 7
 }

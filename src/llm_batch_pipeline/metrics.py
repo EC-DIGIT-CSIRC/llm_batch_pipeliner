@@ -209,16 +209,29 @@ class MetricsCollector:
             return None
         return OtelLogHandler(self._logger_provider)
 
-    def record_run(self, command: str, status: str) -> None:
+    def record_run(self, command: str, status: str, backend: str | None = None) -> None:
         """Record the lifecycle of a full pipeline run."""
         if self._runs_total is not None:
-            self._runs_total.add(1, attributes={"command": command, "status": status})
+            attrs = {"command": command, "status": status}
+            if backend:
+                attrs["backend"] = backend
+            self._runs_total.add(1, attributes=attrs)
 
-    def record_stage(self, batch_name: str, stage: str, duration_ms: float, status: str) -> None:
+    def record_stage(
+        self,
+        batch_name: str,
+        stage: str,
+        duration_ms: float,
+        status: str,
+        backend: str | None = None,
+    ) -> None:
         """Record stage completion for OTLP export and local stats."""
         del batch_name
         if self._stage_duration_seconds is not None:
-            self._stage_duration_seconds.record(duration_ms / 1000, attributes={"stage": stage, "status": status})
+            attrs = {"stage": stage, "status": status}
+            if backend:
+                attrs["backend"] = backend
+            self._stage_duration_seconds.record(duration_ms / 1000, attributes=attrs)
 
         if stage not in self._local_stats:
             self._local_stats[stage] = StageStats(stage=stage)
@@ -233,10 +246,19 @@ class MetricsCollector:
         if self._requests_total is not None:
             self._requests_total.add(1, attributes={"backend": backend, "model": model, "status": status})
 
-    def record_validation(self, batch_name: str, status: str, count: int = 1) -> None:
+    def record_validation(
+        self,
+        batch_name: str,
+        status: str,
+        count: int = 1,
+        backend: str | None = None,
+    ) -> None:
         del batch_name
         if self._validation_total is not None and count > 0:
-            self._validation_total.add(count, attributes={"status": status})
+            attrs = {"status": status}
+            if backend:
+                attrs["backend"] = backend
+            self._validation_total.add(count, attributes=attrs)
 
     def inc_active(self, backend: str) -> None:
         if self._active_requests is not None:

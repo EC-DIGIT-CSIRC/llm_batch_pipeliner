@@ -1,8 +1,8 @@
 # LLM Batch Pipeline
 
-`llm-batch-pipeline` is a generic LLM batch processing pipeline. It discovers and parses input files via a plugin system, renders OpenAI Batch API (or Ollama) requests, validates structured JSON outputs with a Pydantic schema, evaluates predictions against ground truth, and exports results to XLSX/JSON.
+`llm-batch-pipeline` is a generic LLM batch processing pipeline. It discovers and parses input files via a plugin system, renders OpenAI Batch API (or Ollama / llama.cpp) requests, validates structured JSON outputs with a Pydantic schema, evaluates predictions against ground truth, and exports results to XLSX/JSON.
 
-See the **Getting Started Guide** for a tested end-to-end walkthrough with OpenAI Batch API and a 3-way sharded Ollama setup ([docs/getting-started.md](docs/getting-started.md)). See the **User Guide** for installation and CLI reference ([docs/user-guide.md](docs/user-guide.md)). See the **Admin Guide** for installation/deployment, and the **Developer Guide** for how to extend the pipeline with custom plugins, prompts, schemas, and evaluation.
+See the **Getting Started Guide** for a tested end-to-end walkthrough with OpenAI Batch API and a 3-way sharded Ollama setup ([docs/getting-started.md](docs/getting-started.md)). For native llama.cpp, see the benchmark guide and server notes in [`docs/running-llamacpp.md`](docs/running-llamacpp.md). See the **User Guide** for installation and CLI reference ([docs/user-guide.md](docs/user-guide.md)). See the **Admin Guide** for installation/deployment, and the **Developer Guide** for how to extend the pipeline with custom plugins, prompts, schemas, and evaluation.
 
 ## Workflow
 ```mermaid
@@ -23,10 +23,12 @@ flowchart TD
     subgraph Backends
         H --> H1[OpenAI Batch API]
         H --> H2[Ollama Local]
+        H --> H3[llama.cpp Local]
     end
 
     H1 --> I
     H2 --> I
+    H3 --> I
 
     subgraph Outputs
         K --> K1[results.xlsx]
@@ -43,6 +45,7 @@ flowchart TD
 ## Requirements
 - OpenAI backend: set `OPENAI_API_KEY`.
 - Local LLM via Ollama: run an Ollama server (pull the model), then use `--backend ollama --base-url http://HOST:11434` (repeat `--base-url` for multi-server sharding).
+- Local LLM via llama.cpp: run a native `llama-server`, then use `--backend llamacpp --llamacpp-endpoint chat --base-url http://HOST:18100`.
 - OpenAI API compatible local server (if supported by your server): use `--backend openai` and configure the OpenAI SDK base URL (commonly via `OPENAI_BASE_URL`).
 
 ## Getting Started
@@ -65,7 +68,11 @@ uv run llm-batch-pipeline list
 The built-in examples include `spam_detection` and `gdpr_detection`.
 
 ## Test / Benchmark
-- SpamAssassin corpus reference run: [`docs/benchmark-run.md`](docs/benchmark-run.md)
+- Sequential Ollama vs. vLLM benchmark runbook: [`docs/benchmark-run.md`](docs/benchmark-run.md)
+- vLLM-specific guide: [`docs/running-vllm.md`](docs/running-vllm.md)
+- Ollama sharding guide: [`docs/running-ollama.md`](docs/running-ollama.md)
+- llama.cpp native guide: [`docs/running-llamacpp.md`](docs/running-llamacpp.md)
+- Backend comparison guide: [`docs/backend-comparison.md`](docs/backend-comparison.md)
 
 ## Architecture
 - [`docs/architecture.md`](docs/architecture.md)
